@@ -1,4 +1,5 @@
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useState, useEffect } from "react";
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -10,77 +11,108 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { getApiUrl } from "@/lib/query-client";
 
 type MarketItem = {
   id: string;
-  name: string;
-  price: number;
-  category: string;
-  gradient: [string, string];
-  icon: keyof typeof Feather.glyphMap;
+  title: string;
+  description: string | null;
+  category: string | null;
+  price: number | null;
+  imageUrl: string | null;
+  userId: string;
+  isActive: boolean;
 };
 
-const marketItems: MarketItem[] = [
-  {
-    id: "1",
-    name: "Premium Badge Pack",
-    price: 299,
-    category: "Badges",
-    gradient: ["#EAB308", "#F59E0B"],
-    icon: "award",
-  },
-  {
-    id: "2",
-    name: "Custom Avatar Frame",
-    price: 199,
-    category: "Customization",
-    gradient: ["#8B5CF6", "#A855F7"],
-    icon: "user",
-  },
-  {
-    id: "3",
-    name: "Streak Booster",
-    price: 149,
-    category: "Boosters",
-    gradient: ["#22C55E", "#10B981"],
-    icon: "zap",
-  },
-  {
-    id: "4",
-    name: "Profile Theme Pack",
-    price: 399,
-    category: "Themes",
-    gradient: ["#EC4899", "#F472B6"],
-    icon: "layers",
-  },
-  {
-    id: "5",
-    name: "Exclusive Stickers",
-    price: 99,
-    category: "Stickers",
-    gradient: ["#3B82F6", "#60A5FA"],
-    icon: "star",
-  },
-  {
-    id: "6",
-    name: "XP Multiplier",
-    price: 249,
-    category: "Boosters",
-    gradient: ["#F97316", "#FB923C"],
-    icon: "trending-up",
-  },
+const defaultItems: MarketItem[] = [
+  { id: "1", title: "Premium Badge Pack", description: "Unlock exclusive badges", category: "Badges", price: 299, imageUrl: null, userId: "", isActive: true },
+  { id: "2", title: "Custom Avatar Frame", description: "Stand out from the crowd", category: "Customization", price: 199, imageUrl: null, userId: "", isActive: true },
+  { id: "3", title: "Streak Booster", description: "Boost your streak progress", category: "Boosters", price: 149, imageUrl: null, userId: "", isActive: true },
+  { id: "4", title: "Profile Theme Pack", description: "Personalize your profile", category: "Themes", price: 399, imageUrl: null, userId: "", isActive: true },
+  { id: "5", title: "Exclusive Stickers", description: "Fun stickers for chat", category: "Stickers", price: 99, imageUrl: null, userId: "", isActive: true },
+  { id: "6", title: "XP Multiplier", description: "Double your XP gain", category: "Boosters", price: 249, imageUrl: null, userId: "", isActive: true },
 ];
+
+const categoryGradients: { [key: string]: [string, string] } = {
+  Badges: ["#EAB308", "#F59E0B"],
+  Customization: ["#8B5CF6", "#A855F7"],
+  Boosters: ["#22C55E", "#10B981"],
+  Themes: ["#EC4899", "#F472B6"],
+  Stickers: ["#3B82F6", "#60A5FA"],
+};
+
+const categoryIcons: { [key: string]: keyof typeof Feather.glyphMap } = {
+  Badges: "award",
+  Customization: "user",
+  Boosters: "zap",
+  Themes: "layers",
+  Stickers: "star",
+};
 
 const categories = ["All", "Badges", "Customization", "Boosters", "Themes", "Stickers"];
 
 export default function MarketScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
-  const { theme, userCoins } = useTheme();
+  const { theme } = useTheme();
+  const { user, token } = useAuth();
+  const [marketItems, setMarketItems] = useState<MarketItem[]>(defaultItems);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchMarketItems = async () => {
+    try {
+      const categoryParam = selectedCategory !== "All" ? `?category=${selectedCategory}` : "";
+      const response = await fetch(new URL(`/api/market${categoryParam}`, getApiUrl()).toString());
+      if (response.ok) {
+        const data = await response.json();
+        if (data.length > 0) {
+          setMarketItems(data);
+        } else {
+          setMarketItems(defaultItems.filter(item => 
+            selectedCategory === "All" || item.category === selectedCategory
+          ));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch market items:", error);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarketItems();
+  }, [selectedCategory]);
+
+  const handleCategorySelect = (category: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedCategory(category);
+  };
 
   const handlePurchase = (item: MarketItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchMarketItems();
+  };
+
+  const filteredItems = selectedCategory === "All" 
+    ? marketItems 
+    : marketItems.filter(item => item.category === selectedCategory);
+
+  const getGradient = (category: string | null): [string, string] => {
+    return categoryGradients[category || "Badges"] || ["#6B7280", "#9CA3AF"];
+  };
+
+  const getIcon = (category: string | null): keyof typeof Feather.glyphMap => {
+    return categoryIcons[category || "Badges"] || "package";
   };
 
   return (
@@ -95,6 +127,9 @@ export default function MarketScreen() {
           },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <Animated.View entering={FadeInDown.springify()}>
           <View style={styles.balanceCard}>
@@ -105,7 +140,7 @@ export default function MarketScreen() {
               <ThemedText type="small" style={{ color: theme.textSecondary }}>
                 Available Balance
               </ThemedText>
-              <ThemedText type="h3">{userCoins.toLocaleString()} coins</ThemedText>
+              <ThemedText type="h3">{(user?.coins || 0).toLocaleString()} coins</ThemedText>
             </View>
           </View>
         </Animated.View>
@@ -116,12 +151,13 @@ export default function MarketScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
           >
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <Pressable
                 key={category}
+                onPress={() => handleCategorySelect(category)}
                 style={[
                   styles.categoryPill,
-                  index === 0
+                  selectedCategory === category
                     ? { backgroundColor: theme.accent }
                     : { backgroundColor: theme.backgroundSecondary },
                 ]}
@@ -130,7 +166,7 @@ export default function MarketScreen() {
                   type="small"
                   style={[
                     styles.categoryText,
-                    index === 0 ? { color: "#FFFFFF" } : { color: theme.text },
+                    selectedCategory === category ? { color: "#FFFFFF" } : { color: theme.text },
                   ]}
                 >
                   {category}
@@ -149,41 +185,47 @@ export default function MarketScreen() {
           </ThemedText>
         </Animated.View>
 
-        <View style={styles.itemsGrid}>
-          {marketItems.map((item, index) => (
-            <Animated.View
-              key={item.id}
-              entering={FadeInDown.delay(200 + index * 50).springify()}
-              style={styles.itemWrapper}
-            >
-              <Card onPress={() => handlePurchase(item)} style={styles.itemCard}>
-                <LinearGradient
-                  colors={item.gradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.itemIcon}
-                >
-                  <Feather name={item.icon} size={28} color="#FFFFFF" />
-                </LinearGradient>
-                <ThemedText type="body" style={styles.itemName} numberOfLines={1}>
-                  {item.name}
-                </ThemedText>
-                <ThemedText
-                  type="xs"
-                  style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}
-                >
-                  {item.category}
-                </ThemedText>
-                <View style={styles.priceContainer}>
-                  <Feather name="dollar-sign" size={14} color={theme.yellow} />
-                  <ThemedText type="bodyMedium" style={{ color: theme.yellow }}>
-                    {item.price}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={theme.link} />
+          </View>
+        ) : (
+          <View style={styles.itemsGrid}>
+            {filteredItems.map((item, index) => (
+              <Animated.View
+                key={item.id}
+                entering={FadeInDown.delay(200 + index * 50).springify()}
+                style={styles.itemWrapper}
+              >
+                <Card onPress={() => handlePurchase(item)} style={styles.itemCard}>
+                  <LinearGradient
+                    colors={getGradient(item.category)}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.itemIcon}
+                  >
+                    <Feather name={getIcon(item.category)} size={28} color="#FFFFFF" />
+                  </LinearGradient>
+                  <ThemedText type="body" style={styles.itemName} numberOfLines={1}>
+                    {item.title}
                   </ThemedText>
-                </View>
-              </Card>
-            </Animated.View>
-          ))}
-        </View>
+                  <ThemedText
+                    type="xs"
+                    style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}
+                  >
+                    {item.category || "Item"}
+                  </ThemedText>
+                  <View style={styles.priceContainer}>
+                    <Feather name="dollar-sign" size={14} color={theme.yellow} />
+                    <ThemedText type="bodyMedium" style={{ color: theme.yellow }}>
+                      {item.price || 0}
+                    </ThemedText>
+                  </View>
+                </Card>
+              </Animated.View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </ThemedView>
   );
@@ -229,6 +271,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     letterSpacing: 0.5,
     paddingHorizontal: Spacing.xs,
+  },
+  loadingContainer: {
+    padding: Spacing["3xl"],
+    alignItems: "center",
+    justifyContent: "center",
   },
   itemsGrid: {
     flexDirection: "row",

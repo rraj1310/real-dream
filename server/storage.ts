@@ -301,8 +301,22 @@ class DatabaseStorage implements IStorage {
     return usersWithDreams;
   }
 
-  async getGalleryPosts(): Promise<GalleryPost[]> {
-    return db.select().from(galleryPosts).orderBy(desc(galleryPosts.createdAt));
+  async getGalleryPosts(): Promise<any[]> {
+    const posts = await db.select().from(galleryPosts).orderBy(desc(galleryPosts.createdAt));
+    
+    const postsWithUsers = await Promise.all(
+      posts.map(async (post) => {
+        const user = await this.getUser(post.userId);
+        const dream = post.dreamId ? await this.getDream(post.dreamId) : null;
+        return {
+          ...post,
+          user: user ? { id: user.id, username: user.username, fullName: user.fullName, profileImage: user.profileImage } : null,
+          dream: dream ? { id: dream.id, title: dream.title, type: dream.type } : null,
+        };
+      })
+    );
+    
+    return postsWithUsers;
   }
 
   async createGalleryPost(postData: Partial<GalleryPost>): Promise<GalleryPost> {
@@ -310,8 +324,22 @@ class DatabaseStorage implements IStorage {
     return post;
   }
 
-  async getNewsFeed(userId?: string): Promise<NewsFeedPost[]> {
-    return db.select().from(newsFeedPosts).orderBy(desc(newsFeedPosts.createdAt)).limit(50);
+  async getNewsFeed(userId?: string): Promise<any[]> {
+    const posts = await db.select().from(newsFeedPosts).orderBy(desc(newsFeedPosts.createdAt)).limit(50);
+    
+    const postsWithUsers = await Promise.all(
+      posts.map(async (post) => {
+        const user = await this.getUser(post.userId);
+        const dream = post.dreamId ? await this.getDream(post.dreamId) : null;
+        return {
+          ...post,
+          user: user ? { id: user.id, username: user.username, fullName: user.fullName, profileImage: user.profileImage } : null,
+          dream: dream ? { id: dream.id, title: dream.title, type: dream.type } : null,
+        };
+      })
+    );
+    
+    return postsWithUsers;
   }
 
   async createNewsFeedPost(postData: Partial<NewsFeedPost>): Promise<NewsFeedPost> {
