@@ -10,7 +10,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
@@ -31,24 +31,24 @@ const connectionItem: MenuItem = {
   icon: "users",
   label: "Connections",
   route: "Connections",
-  iconBg: "#DCFCE7",
-  iconColor: "#16A34A",
+  iconBg: "rgba(45, 39, 82, 0.6)",
+  iconColor: "#C4B5FD",
 };
 
 const achievementsItem: MenuItem = {
   icon: "award",
   label: "My Achievements",
   route: "WallOfFame",
-  iconBg: "#FEF3C7",
-  iconColor: "#D97706",
+  iconBg: "rgba(45, 39, 82, 0.6)",
+  iconColor: "#FBBF24",
 };
 
 const themeItem: MenuItem = {
   icon: "sun",
   label: "Theme & Appearance",
   route: "Themes",
-  iconBg: "#EDE9FE",
-  iconColor: "#7C3AED",
+  iconBg: "rgba(45, 39, 82, 0.6)",
+  iconColor: "#A78BFA",
 };
 
 const ordersItems: MenuItem[] = [
@@ -56,15 +56,15 @@ const ordersItems: MenuItem[] = [
     icon: "shopping-bag",
     label: "My Purchase",
     route: "Market",
-    iconBg: "#F3F4F6",
-    iconColor: "#4B5563",
+    iconBg: "rgba(45, 39, 82, 0.6)",
+    iconColor: "#C4B5FD",
   },
   {
     icon: "credit-card",
     label: "My Wallet",
     route: "Wallet",
-    iconBg: "#F3F4F6",
-    iconColor: "#4B5563",
+    iconBg: "rgba(45, 39, 82, 0.6)",
+    iconColor: "#C4B5FD",
   },
 ];
 
@@ -73,22 +73,22 @@ const accountItems: MenuItem[] = [
     icon: "edit-2",
     label: "Edit Profile",
     route: "EditProfile",
-    iconBg: "#DBEAFE",
-    iconColor: "#2563EB",
+    iconBg: "rgba(45, 39, 82, 0.6)",
+    iconColor: "#60A5FA",
   },
   {
     icon: "log-out",
     label: "Sign Out",
     route: "SignOut",
-    iconBg: "#FEF3C7",
-    iconColor: "#D97706",
+    iconBg: "rgba(45, 39, 82, 0.6)",
+    iconColor: "#FBBF24",
   },
   {
     icon: "trash-2",
     label: "Delete Account",
     route: "DeleteAccount",
-    iconBg: "#FEE2E2",
-    iconColor: "#DC2626",
+    iconBg: "rgba(45, 39, 82, 0.6)",
+    iconColor: "#F87171",
     danger: true,
   },
 ];
@@ -204,7 +204,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -421,7 +421,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -439,6 +439,7 @@ const styles = StyleSheet.create({
   profileCard: {
     padding: Spacing.xl,
     alignItems: "center",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   avatar: {
     width: 88,
@@ -465,6 +466,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.lg,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   linkIcon: {
     width: 48,
@@ -490,6 +492,7 @@ const styles = StyleSheet.create({
   menuCard: {
     padding: 0,
     overflow: "hidden",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   menuRow: {
     flexDirection: "row",

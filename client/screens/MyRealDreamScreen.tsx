@@ -10,7 +10,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
@@ -175,7 +175,7 @@ export default function MyRealDreamScreen() {
   const groupDreams = dreams.filter(d => d.type === "group");
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -251,7 +251,7 @@ export default function MyRealDreamScreen() {
           </>
         )}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -275,6 +275,7 @@ const styles = StyleSheet.create({
   dreamCard: {
     padding: Spacing.lg,
     marginBottom: Spacing.sm,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   dreamHeader: {
     flexDirection: "row",
@@ -320,6 +321,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     alignItems: "center",
     marginBottom: Spacing.sm,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   emptyIcon: {
     width: 64,

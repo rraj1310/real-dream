@@ -10,7 +10,7 @@ import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
@@ -103,7 +103,7 @@ export default function ChampionsScreen() {
   const risingStars = leaderboard.slice(3, 6);
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -368,7 +368,7 @@ export default function ChampionsScreen() {
           ) : null}
         </View>
       </Modal>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -387,6 +387,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.lg,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   linkIcon: {
     width: 48,
@@ -416,6 +417,7 @@ const styles = StyleSheet.create({
   },
   championsCard: {
     padding: Spacing.lg,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   emptyState: {
     alignItems: "center",
@@ -452,6 +454,7 @@ const styles = StyleSheet.create({
   starsCard: {
     padding: 0,
     overflow: "hidden",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   starRow: {
     flexDirection: "row",

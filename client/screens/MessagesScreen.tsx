@@ -10,7 +10,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -129,7 +129,7 @@ export default function MessagesScreen() {
   const unreadCount = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -183,7 +183,6 @@ export default function MessagesScreen() {
                 onPress={() => handleConversationPress(conversation)}
                 style={[
                   styles.messageCard,
-                  { backgroundColor: theme.backgroundDefault },
                   conversation.unreadCount > 0 ? { borderLeftWidth: 3, borderLeftColor: theme.accent } : null,
                 ]}
                 testID={`conversation-${conversation.id}`}
@@ -243,7 +242,7 @@ export default function MessagesScreen() {
           </View>
         )}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -288,6 +287,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     gap: Spacing.md,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   avatar: {
     width: 44,

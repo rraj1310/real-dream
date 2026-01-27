@@ -14,8 +14,7 @@ import Animated, {
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Card } from "@/components/Card";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -32,13 +31,13 @@ const menuItems: MenuItemType[] = [
     icon: "target",
     label: "My RealDream",
     route: "RealDreamTab",
-    gradient: ["#3B82F6", "#60A5FA"],
+    gradient: ["#7C3AED", "#A855F7"],
   },
   {
     icon: "users",
     label: "Social",
     route: "NewsFeed",
-    gradient: ["#8B5CF6", "#A855F7"],
+    gradient: ["#EC4899", "#F472B6"],
   },
   {
     icon: "award",
@@ -56,7 +55,7 @@ const menuItems: MenuItemType[] = [
     icon: "image",
     label: "Gallery",
     route: "Gallery",
-    gradient: ["#EC4899", "#F472B6"],
+    gradient: ["#3B82F6", "#60A5FA"],
   },
   {
     icon: "rss",
@@ -99,9 +98,9 @@ function MenuItem({ item, index }: { item: MenuItemType; index: number }) {
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={animatedStyle}
+        style={[styles.menuItem, animatedStyle]}
       >
-        <Card style={[styles.menuItem, { backgroundColor: theme.backgroundDefault }]}>
+        <View style={styles.glassCard}>
           <LinearGradient
             colors={item.gradient}
             start={{ x: 0, y: 0 }}
@@ -113,7 +112,7 @@ function MenuItem({ item, index }: { item: MenuItemType; index: number }) {
           <ThemedText type="small" style={styles.menuLabel}>
             {item.label}
           </ThemedText>
-        </Card>
+        </View>
       </AnimatedPressable>
     </Animated.View>
   );
@@ -123,154 +122,200 @@ export default function MainMenuScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const { user } = useAuth();
-  const userCoins = user?.coins || 0;
+
+  const handleNotifications = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("Notifications");
+  };
+
+  const handleMessages = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("Messages");
+  };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingTop: headerHeight + Spacing.xl,
+            paddingTop: headerHeight + Spacing.lg,
             paddingBottom: tabBarHeight + Spacing.xl,
           },
         ]}
         scrollIndicatorInsets={{ bottom: insets.bottom }}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={FadeInDown.springify()}>
-          <View style={styles.welcomeContainer}>
-            <View style={styles.welcomeText}>
+        <Animated.View entering={FadeInDown.springify()} style={styles.welcomeSection}>
+          <View style={styles.welcomeHeader}>
+            <View>
               <ThemedText type="h2" style={styles.welcomeTitle}>
-                Welcome{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ' back'}!
+                Welcome back,
               </ThemedText>
-              <ThemedText
-                type="body"
-                style={{ color: theme.textSecondary }}
+              <ThemedText type="h3" style={styles.userName}>
+                {user?.fullName || user?.username || "Dreamer"}
+              </ThemedText>
+            </View>
+            <View style={styles.headerActions}>
+              <Pressable onPress={handleNotifications} style={styles.headerButton}>
+                <Feather name="bell" size={22} color="#C4B5FD" />
+              </Pressable>
+              <Pressable onPress={handleMessages} style={styles.headerButton}>
+                <Feather name="message-circle" size={22} color="#C4B5FD" />
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.coinBalanceCard}>
+            <LinearGradient
+              colors={["#7C3AED", "#A855F7"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.coinGradient}
+            >
+              <View style={styles.coinContent}>
+                <View style={styles.coinIconContainer}>
+                  <Feather name="star" size={24} color="#FFFFFF" />
+                </View>
+                <View>
+                  <ThemedText type="small" style={styles.coinLabel}>
+                    Your Balance
+                  </ThemedText>
+                  <ThemedText type="h2" style={styles.coinAmount}>
+                    {user?.coins?.toLocaleString() || "0"} Coins
+                  </ThemedText>
+                </View>
+              </View>
+              <Pressable
+                onPress={() => navigation.navigate("Wallet")}
+                style={styles.addCoinsButton}
               >
-                What would you like to explore today?
-              </ThemedText>
-            </View>
-            <View style={[styles.coinBadge, { backgroundColor: theme.backgroundDefault }]}>
-              <Feather name="dollar-sign" size={16} color={theme.yellow} />
-              <ThemedText type="bodyMedium" style={{ marginLeft: 4 }}>
-                {userCoins.toLocaleString()}
-              </ThemedText>
-            </View>
+                <Feather name="plus" size={20} color="#7C3AED" />
+              </Pressable>
+            </LinearGradient>
           </View>
         </Animated.View>
 
         <View style={styles.menuGrid}>
           {menuItems.map((item, index) => (
-            <MenuItem key={item.route + index} item={item} index={index} />
+            <MenuItem key={item.label} item={item} index={index} />
           ))}
         </View>
-
-        <Animated.View entering={FadeInDown.delay(500).springify()}>
-          <Card style={styles.tipCard}>
-            <LinearGradient
-              colors={theme.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.tipIcon}
-            >
-              <Feather name="zap" size={20} color="#FFFFFF" />
-            </LinearGradient>
-            <View style={styles.tipContent}>
-              <ThemedText type="body" style={styles.tipTitle}>
-                Daily Tip
-              </ThemedText>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                Set small achievable goals to build momentum!
-              </ThemedText>
-            </View>
-          </Card>
-        </Animated.View>
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: Spacing.lg,
-    gap: Spacing.xl,
   },
-  welcomeContainer: {
+  welcomeSection: {
+    marginBottom: Spacing.xl,
+  },
+  welcomeHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-  },
-  welcomeText: {
-    flex: 1,
+    marginBottom: Spacing.lg,
   },
   welcomeTitle: {
-    marginBottom: Spacing.xs,
+    color: "#8B7FC7",
+    fontWeight: "500",
   },
-  coinBadge: {
+  userName: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  headerActions: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  coinBalanceCard: {
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+  },
+  coinGradient: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    justifyContent: "space-between",
+    padding: Spacing.lg,
+  },
+  coinContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  coinIconContainer: {
+    width: 48,
+    height: 48,
     borderRadius: BorderRadius.full,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  coinLabel: {
+    color: "rgba(255, 255, 255, 0.8)",
+  },
+  coinAmount: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  addCoinsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
   menuGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: Spacing.lg,
+    gap: Spacing.md,
+    justifyContent: "space-between",
   },
   menuItemWrapper: {
-    width: "47%",
+    width: "48%",
   },
   menuItem: {
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+  },
+  glassCard: {
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    borderWidth: 1,
+    borderColor: "rgba(139, 127, 199, 0.2)",
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     alignItems: "center",
-    paddingVertical: Spacing.xl,
-    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
   },
   iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: BorderRadius.lg,
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: Spacing.md,
   },
   menuLabel: {
+    color: "#FFFFFF",
     fontWeight: "600",
     textAlign: "center",
-  },
-  tipCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: Spacing.lg,
-  },
-  tipIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: Spacing.md,
-  },
-  tipContent: {
-    flex: 1,
-  },
-  tipTitle: {
-    fontWeight: "600",
-    marginBottom: 2,
   },
 });

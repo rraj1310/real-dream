@@ -8,7 +8,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
@@ -45,7 +45,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -61,29 +61,29 @@ export default function SettingsScreen() {
         <Animated.View entering={FadeInDown.springify()}>
           <Card style={styles.userInfoCard}>
             <View style={styles.userInfoRow}>
-              <Feather name="user" size={24} color={theme.textSecondary} />
+              <Feather name="user" size={24} color="#C4B5FD" />
               <View style={styles.userInfoContent}>
                 <ThemedText
                   type="small"
-                  style={{ color: theme.textSecondary }}
+                  style={{ color: "#8B7FC7" }}
                 >
                   User Name
                 </ThemedText>
-                <ThemedText type="body" style={styles.userInfoValue}>
+                <ThemedText type="body" style={[styles.userInfoValue, { color: "#FFFFFF" }]}>
                   {user?.username || "Not set"}
                 </ThemedText>
               </View>
             </View>
             <View style={styles.userInfoRow}>
-              <Feather name="user" size={24} color={theme.textSecondary} />
+              <Feather name="user" size={24} color="#C4B5FD" />
               <View style={styles.userInfoContent}>
                 <ThemedText
                   type="small"
-                  style={{ color: theme.textSecondary }}
+                  style={{ color: "#8B7FC7" }}
                 >
                   Full Name
                 </ThemedText>
-                <ThemedText type="body" style={styles.userInfoValue}>
+                <ThemedText type="body" style={[styles.userInfoValue, { color: "#FFFFFF" }]}>
                   {user?.fullName || "Not set"}
                 </ThemedText>
               </View>
@@ -103,18 +103,18 @@ export default function SettingsScreen() {
                 ]}
               >
                 <View style={styles.menuIcon}>
-                  <Feather name={item.icon} size={20} color={theme.textSecondary} />
+                  <Feather name={item.icon} size={20} color="#C4B5FD" />
                 </View>
-                <ThemedText type="body" style={styles.menuLabel}>
+                <ThemedText type="body" style={[styles.menuLabel, { color: "#FFFFFF" }]}>
                   {item.label}
                 </ThemedText>
-                <Feather name="chevron-right" size={20} color={theme.link} />
+                <Feather name="chevron-right" size={20} color="#A78BFA" />
               </Pressable>
             ))}
           </Card>
         </Animated.View>
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
   userInfoCard: {
     padding: Spacing.lg,
     gap: Spacing.md,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   userInfoRow: {
     flexDirection: "row",
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
   menuCard: {
     padding: 0,
     overflow: "hidden",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   menuRow: {
     flexDirection: "row",
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
   },
   menuRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "rgba(139, 127, 199, 0.3)",
   },
   menuIcon: {
     width: 40,
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: Spacing.md,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
   },
   menuLabel: {
     flex: 1,
