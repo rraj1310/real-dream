@@ -6,6 +6,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -31,11 +32,19 @@ const connectionItem: MenuItem = {
 };
 
 const achievementsItem: MenuItem = {
-  icon: "shield",
+  icon: "award",
   label: "My Achievements",
   route: "WallOfFame",
   iconBg: "#FEF3C7",
   iconColor: "#D97706",
+};
+
+const themeItem: MenuItem = {
+  icon: "sun",
+  label: "Theme & Appearance",
+  route: "Themes",
+  iconBg: "#EDE9FE",
+  iconColor: "#7C3AED",
 };
 
 const ordersItems: MenuItem[] = [
@@ -85,7 +94,7 @@ function MenuRow({
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.menuRow, !isLast ? styles.menuRowBorder : null]}
+      style={[styles.menuRow, !isLast ? { borderBottomWidth: 1, borderBottomColor: theme.border } : null]}
     >
       <View style={[styles.menuIcon, { backgroundColor: item.iconBg }]}>
         <Feather name={item.icon} size={20} color={item.iconColor} />
@@ -109,7 +118,7 @@ export default function ProfileScreen() {
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
-  const { theme } = useTheme();
+  const { theme, currentTheme } = useTheme();
 
   const handleNavigate = (route?: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -134,9 +143,14 @@ export default function ProfileScreen() {
       >
         <Animated.View entering={FadeInDown.springify()}>
           <Card style={styles.profileCard}>
-            <View style={styles.avatar}>
+            <LinearGradient
+              colors={theme.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.avatar}
+            >
               <Feather name="user" size={40} color="#FFFFFF" />
-            </View>
+            </LinearGradient>
             <View style={styles.profileInfo}>
               <ThemedText
                 type="xs"
@@ -206,6 +220,34 @@ export default function ProfileScreen() {
           </Card>
         </Animated.View>
 
+        <Animated.View entering={FadeInDown.delay(175).springify()}>
+          <Card
+            onPress={() => handleNavigate(themeItem.route)}
+            style={styles.linkCard}
+          >
+            <LinearGradient
+              colors={currentTheme.colors.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.linkIcon}
+            >
+              <Feather name="sun" size={24} color="#FFFFFF" />
+            </LinearGradient>
+            <View style={styles.linkContent}>
+              <ThemedText type="body" style={styles.linkTitle}>
+                {themeItem.label}
+              </ThemedText>
+              <ThemedText
+                type="small"
+                style={{ color: theme.textSecondary }}
+              >
+                Current: {currentTheme.name}
+              </ThemedText>
+            </View>
+            <Feather name="chevron-right" size={20} color={theme.textMuted} />
+          </Card>
+        </Animated.View>
+
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <ThemedText
             type="xs"
@@ -264,13 +306,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatar: {
-    width: 80,
-    height: 80,
+    width: 88,
+    height: 88,
     borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: Spacing.lg,
-    backgroundColor: "#8B5CF6",
   },
   profileInfo: {
     alignItems: "center",
@@ -319,10 +360,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: Spacing.lg,
-  },
-  menuRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
   },
   menuIcon: {
     width: 40,
