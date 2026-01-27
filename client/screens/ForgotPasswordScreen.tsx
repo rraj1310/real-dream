@@ -13,7 +13,6 @@ import Animated, {
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
@@ -26,13 +25,8 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) {
   const insets = useSafeAreaInsets();
-  const { theme } = useTheme();
-  const { forgotPassword, resetPassword } = useAuth();
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState("");
-  const [resetToken, setResetToken] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [step, setStep] = useState<"email" | "reset">("email");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -59,53 +53,17 @@ export default function ForgotPasswordScreen({ navigation }: ForgotPasswordScree
 
     setIsLoading(true);
     setError("");
+    setSuccess("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     const result = await forgotPassword(email.trim().toLowerCase());
     setIsLoading(false);
 
     if (result.success) {
-      setSuccess("Reset instructions sent to your email");
-      if (result.resetToken) {
-        setResetToken(result.resetToken);
-        setStep("reset");
-      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSuccess("Password reset link has been sent to your email. Please check your inbox and follow the instructions to reset your password.");
     } else {
       setError(result.error || "Failed to send reset email");
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!newPassword || !confirmPassword) {
-      setError("Please enter your new password");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    const result = await resetPassword(resetToken, newPassword);
-    setIsLoading(false);
-
-    if (result.success) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setSuccess("Password reset successfully!");
-      setTimeout(() => {
-        navigation.goBack();
-      }, 2000);
-    } else {
-      setError(result.error || "Failed to reset password");
     }
   };
 
@@ -151,131 +109,66 @@ export default function ForgotPasswordScreen({ navigation }: ForgotPasswordScree
           </LinearGradient>
 
           <ThemedText type="h2" style={styles.title}>
-            {step === "email" ? "Forgot Password?" : "Reset Password"}
+            Forgot Password?
           </ThemedText>
           <ThemedText type="body" style={styles.subtitle}>
-            {step === "email"
-              ? "Enter your email to receive reset instructions"
-              : "Enter your new password"}
+            Enter your email to receive a password reset link
           </ThemedText>
 
-          {step === "email" ? (
-            <View style={styles.form}>
-              <View style={styles.glassInput}>
-                <Feather name="mail" size={20} color="#8B7FC7" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter your email"
-                  placeholderTextColor="#8B7FC7"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  testID="input-forgot-email"
-                />
-              </View>
+          <View style={styles.form}>
+            <View style={styles.glassInput}>
+              <Feather name="mail" size={20} color="#8B7FC7" style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                placeholder="Enter your email"
+                placeholderTextColor="#8B7FC7"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                testID="input-forgot-email"
+              />
+            </View>
 
-              {error ? (
-                <ThemedText type="small" style={styles.errorText}>
-                  {error}
-                </ThemedText>
-              ) : null}
+            {error ? (
+              <ThemedText type="small" style={styles.errorText}>
+                {error}
+              </ThemedText>
+            ) : null}
 
-              {success ? (
+            {success ? (
+              <View style={styles.successContainer}>
+                <Feather name="check-circle" size={20} color="#22C55E" />
                 <ThemedText type="small" style={styles.successText}>
                   {success}
                 </ThemedText>
-              ) : null}
-
-              <AnimatedPressable
-                onPress={handleSendReset}
-                onPressIn={handleButtonPressIn}
-                onPressOut={handleButtonPressOut}
-                disabled={isLoading}
-                style={buttonAnimatedStyle}
-                testID="button-send-reset"
-              >
-                <LinearGradient
-                  colors={["#7C3AED", "#A855F7", "#EC4899"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.submitButton}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <ThemedText type="body" style={styles.submitButtonText}>
-                      Send Reset Link
-                    </ThemedText>
-                  )}
-                </LinearGradient>
-              </AnimatedPressable>
-            </View>
-          ) : (
-            <View style={styles.form}>
-              <View style={styles.glassInput}>
-                <Feather name="lock" size={20} color="#8B7FC7" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="New password"
-                  placeholderTextColor="#8B7FC7"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  secureTextEntry
-                  testID="input-new-password"
-                />
               </View>
+            ) : null}
 
-              <View style={styles.glassInput}>
-                <Feather name="lock" size={20} color="#8B7FC7" style={styles.inputIcon} />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Confirm new password"
-                  placeholderTextColor="#8B7FC7"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  testID="input-confirm-password"
-                />
-              </View>
-
-              {error ? (
-                <ThemedText type="small" style={styles.errorText}>
-                  {error}
-                </ThemedText>
-              ) : null}
-
-              {success ? (
-                <ThemedText type="small" style={styles.successText}>
-                  {success}
-                </ThemedText>
-              ) : null}
-
-              <AnimatedPressable
-                onPress={handleResetPassword}
-                onPressIn={handleButtonPressIn}
-                onPressOut={handleButtonPressOut}
-                disabled={isLoading}
-                style={buttonAnimatedStyle}
-                testID="button-reset-password"
+            <AnimatedPressable
+              onPress={handleSendReset}
+              onPressIn={handleButtonPressIn}
+              onPressOut={handleButtonPressOut}
+              disabled={isLoading}
+              style={buttonAnimatedStyle}
+              testID="button-send-reset"
+            >
+              <LinearGradient
+                colors={["#7C3AED", "#A855F7", "#EC4899"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.submitButton}
               >
-                <LinearGradient
-                  colors={["#7C3AED", "#A855F7", "#EC4899"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.submitButton}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <ThemedText type="body" style={styles.submitButtonText}>
-                      Reset Password
-                    </ThemedText>
-                  )}
-                </LinearGradient>
-              </AnimatedPressable>
-            </View>
-          )}
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <ThemedText type="body" style={styles.submitButtonText}>
+                    Send Reset Link
+                  </ThemedText>
+                )}
+              </LinearGradient>
+            </AnimatedPressable>
+          </View>
 
           <Pressable
             onPress={() => navigation.goBack()}
@@ -375,9 +268,19 @@ const styles = StyleSheet.create({
     color: "#EF4444",
     textAlign: "center",
   },
+  successContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    backgroundColor: "rgba(34, 197, 94, 0.1)",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.sm,
+  },
   successText: {
     color: "#22C55E",
     textAlign: "center",
+    flex: 1,
   },
   submitButton: {
     height: 56,

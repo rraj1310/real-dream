@@ -4,20 +4,42 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { loginSchema, registerSchema } from "@shared/schema";
+import { verifyIdToken, initializeFirebaseAdmin } from "./firebase-admin";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "real-dream-secret-key";
 
-interface AuthRequest extends Request {
-  user?: { id: string; email: string };
+let firebaseInitialized = false;
+try {
+  initializeFirebaseAdmin();
+  firebaseInitialized = true;
+} catch (error) {
+  console.warn("Firebase Admin SDK not initialized. Firebase auth will not work:", error);
 }
 
-function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+interface AuthRequest extends Request {
+  user?: { id: string; email: string; firebaseUid?: string };
+}
+
+async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   const token = authHeader.split(" ")[1];
+  
+  if (firebaseInitialized) {
+    try {
+      const decodedToken = await verifyIdToken(token);
+      const user = await storage.getUserByFirebaseUid(decodedToken.uid);
+      if (user) {
+        req.user = { id: user.id, email: user.email, firebaseUid: decodedToken.uid };
+        return next();
+      }
+    } catch {
+    }
+  }
+  
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
     req.user = decoded;
@@ -255,6 +277,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Reset password error:", error);
       res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
+  app.post("/api/auth/firebase", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "Firebase token required" });
+      }
+
+      const token = authHeader.split(" ")[1];
+      
+      if (!firebaseInitialized) {
+        return res.status(500).json({ error: "Firebase not configured" });
+      }
+
+      const decodedToken = await verifyIdToken(token);
+      const { email, fullName, profileImage, firebaseUid, authProvider } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      let user = await storage.getUserByFirebaseUid(firebaseUid || decodedToken.uid);
+      
+      if (!user) {
+        user = await storage.getUserByEmail(email);
+        if (user) {
+          user = await storage.updateUser(user.id, { 
+            firebaseUid: firebaseUid || decodedToken.uid,
+            authProvider: authProvider === 'google.com' ? 'google' : 
+                          authProvider === 'facebook.com' ? 'facebook' : 
+                          authProvider === 'phone' ? 'phone' : 'email',
+          });
+        } else {
+          const username = email.split("@")[0] + "_" + Math.random().toString(36).substring(2, 7);
+          user = await storage.createUser({
+            email,
+            username,
+            fullName: fullName || email.split("@")[0],
+            profileImage,
+            firebaseUid: firebaseUid || decodedToken.uid,
+            authProvider: authProvider === 'google.com' ? 'google' : 
+                          authProvider === 'facebook.com' ? 'facebook' : 
+                          authProvider === 'phone' ? 'phone' : 'email',
+            coins: 100,
+          });
+        }
+      }
+
+      if (!user) {
+        return res.status(500).json({ error: "Failed to create user" });
+      }
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Firebase auth error:", error);
+      res.status(500).json({ error: "Firebase authentication failed" });
+    }
+  });
+
+  app.post("/api/auth/firebase-register", async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "Firebase token required" });
+      }
+
+      const token = authHeader.split(" ")[1];
+      
+      if (!firebaseInitialized) {
+        return res.status(500).json({ error: "Firebase not configured" });
+      }
+
+      const decodedToken = await verifyIdToken(token);
+      const { email, username, fullName, firebaseUid, authProvider } = req.body;
+      
+      if (!email || !username) {
+        return res.status(400).json({ error: "Email and username are required" });
+      }
+
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ error: "Email already registered" });
+      }
+
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+
+      const user = await storage.createUser({
+        email,
+        username,
+        fullName: fullName || username,
+        firebaseUid: firebaseUid || decodedToken.uid,
+        authProvider: authProvider === 'phone' ? 'phone' : 'email',
+        coins: 100,
+      });
+
+      if (!user) {
+        return res.status(500).json({ error: "Failed to create user" });
+      }
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(201).json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Firebase register error:", error);
+      res.status(500).json({ error: "Firebase registration failed" });
     }
   });
 

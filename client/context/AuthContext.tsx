@@ -1,6 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiUrl } from '../lib/query-client';
+import {
+  auth,
+  signInWithEmail,
+  signUpWithEmail,
+  signOutUser,
+  resetPassword as firebaseResetPassword,
+  getIdToken,
+  signInWithGooglePopup,
+  signInWithFacebookPopup,
+  onAuthStateChanged,
+} from '../lib/firebase';
 
 export interface User {
   id: string;
@@ -19,6 +30,7 @@ export interface User {
   dailySpinsLeft?: number;
   lastSpinDate?: string;
   authProvider?: string;
+  firebaseUid?: string;
 }
 
 interface AuthContextType {
@@ -33,8 +45,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
-  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; resetToken?: string }>;
-  resetPassword: (token: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 interface RegisterData {
@@ -52,6 +63,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const apiUrl = getApiUrl();
+
+  const syncUserWithBackend = useCallback(async (firebaseToken: string, firebaseUser: any) => {
+    try {
+      const response = await fetch(new URL('/api/auth/firebase', apiUrl).toString(), {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${firebaseToken}`,
+        },
+        body: JSON.stringify({
+          email: firebaseUser.email,
+          fullName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+          profileImage: firebaseUser.photoURL,
+          firebaseUid: firebaseUser.uid,
+          authProvider: firebaseUser.providerData?.[0]?.providerId || 'password',
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        setToken(firebaseToken);
+        await AsyncStorage.setItem('auth_token', firebaseToken);
+        return { success: true };
+      } else {
+        const error = await response.json();
+        return { success: false, error: error.error || 'Failed to sync user' };
+      }
+    } catch (error) {
+      console.error('Sync user error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  }, [apiUrl]);
 
   const loadStoredAuth = useCallback(async () => {
     try {
@@ -76,130 +120,173 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [apiUrl]);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const idToken = await firebaseUser.getIdToken();
+          const response = await fetch(new URL('/api/auth/me', apiUrl).toString(), {
+            headers: { Authorization: `Bearer ${idToken}` },
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+            setToken(idToken);
+            await AsyncStorage.setItem('auth_token', idToken);
+          }
+        } catch (error) {
+          console.error('Auth state change error:', error);
+        }
+      }
+      setIsLoading(false);
+    });
+
     loadStoredAuth();
-  }, [loadStoredAuth]);
+
+    return () => unsubscribe();
+  }, [loadStoredAuth, apiUrl]);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch(new URL('/api/auth/login', apiUrl).toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      const userCredential = await signInWithEmail(email, password);
+      const firebaseToken = await userCredential.user.getIdToken();
       
-      if (!response.ok) {
-        return { success: false, error: data.error || 'Login failed' };
-      }
-
-      await AsyncStorage.setItem('auth_token', data.token);
-      setUser(data.user);
-      setToken(data.token);
-      return { success: true };
-    } catch (error) {
+      return await syncUserWithBackend(firebaseToken, userCredential.user);
+    } catch (error: any) {
       console.error('Login error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
+      let errorMessage = 'Login failed';
+      
+      if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password';
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid email or password';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
 
   const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
     try {
-      const mockGoogleId = 'google_' + Math.random().toString(36).substring(2, 15);
-      const mockEmail = `user_${Date.now()}@gmail.com`;
-      
-      const response = await fetch(new URL('/api/auth/google', apiUrl).toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          googleId: mockGoogleId,
-          email: mockEmail,
-          fullName: 'Google User',
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return { success: false, error: data.error || 'Google login failed' };
+      const userCredential = await signInWithGooglePopup();
+      if (!userCredential) {
+        return { success: false, error: 'Google sign-in was cancelled' };
       }
-
-      await AsyncStorage.setItem('auth_token', data.token);
-      setUser(data.user);
-      setToken(data.token);
-      return { success: true };
-    } catch (error) {
+      
+      const firebaseToken = await userCredential.user.getIdToken();
+      return await syncUserWithBackend(firebaseToken, userCredential.user);
+    } catch (error: any) {
       console.error('Google login error:', error);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        return { success: false, error: 'Sign-in was cancelled' };
+      }
+      if (error.code === 'auth/popup-blocked') {
+        return { success: false, error: 'Pop-up was blocked. Please allow pop-ups.' };
+      }
+      
       return { success: false, error: 'Google login failed. Please try again.' };
     }
   };
 
   const loginWithFacebook = async (): Promise<{ success: boolean; error?: string }> => {
     try {
-      const mockFacebookId = 'fb_' + Math.random().toString(36).substring(2, 15);
-      const mockEmail = `user_${Date.now()}@facebook.com`;
-      
-      const response = await fetch(new URL('/api/auth/facebook', apiUrl).toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          facebookId: mockFacebookId,
-          email: mockEmail,
-          fullName: 'Facebook User',
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return { success: false, error: data.error || 'Facebook login failed' };
+      const userCredential = await signInWithFacebookPopup();
+      if (!userCredential) {
+        return { success: false, error: 'Facebook sign-in was cancelled' };
       }
-
-      await AsyncStorage.setItem('auth_token', data.token);
-      setUser(data.user);
-      setToken(data.token);
-      return { success: true };
-    } catch (error) {
+      
+      const firebaseToken = await userCredential.user.getIdToken();
+      return await syncUserWithBackend(firebaseToken, userCredential.user);
+    } catch (error: any) {
       console.error('Facebook login error:', error);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        return { success: false, error: 'Sign-in was cancelled' };
+      }
+      if (error.code === 'auth/popup-blocked') {
+        return { success: false, error: 'Pop-up was blocked. Please allow pop-ups.' };
+      }
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        return { success: false, error: 'An account already exists with this email using a different sign-in method.' };
+      }
+      
       return { success: false, error: 'Facebook login failed. Please try again.' };
     }
   };
 
   const register = async (registerData: RegisterData): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch(new URL('/api/auth/register', apiUrl).toString(), {
+      const userCredential = await signUpWithEmail(registerData.email, registerData.password);
+      const firebaseToken = await userCredential.user.getIdToken();
+      
+      const response = await fetch(new URL('/api/auth/firebase-register', apiUrl).toString(), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${firebaseToken}`,
+        },
+        body: JSON.stringify({
+          email: registerData.email,
+          username: registerData.username,
+          fullName: registerData.fullName,
+          firebaseUid: userCredential.user.uid,
+          authProvider: 'password',
+        }),
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        return { success: false, error: data.error || 'Registration failed' };
+        const error = await response.json();
+        await userCredential.user.delete();
+        return { success: false, error: error.error || 'Registration failed' };
       }
 
-      await AsyncStorage.setItem('auth_token', data.token);
+      const data = await response.json();
+      await AsyncStorage.setItem('auth_token', firebaseToken);
       setUser(data.user);
-      setToken(data.token);
+      setToken(firebaseToken);
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Register error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
+      let errorMessage = 'Registration failed';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Use at least 6 characters.';
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
 
   const logout = async () => {
+    try {
+      await signOutUser();
+    } catch (error) {
+      console.error('Firebase sign out error:', error);
+    }
     await AsyncStorage.removeItem('auth_token');
     setUser(null);
     setToken(null);
   };
 
   const refreshUser = async () => {
-    if (!token) return;
+    const currentToken = token || await getIdToken();
+    if (!currentToken) return;
+    
     try {
       const response = await fetch(new URL('/api/auth/me', apiUrl).toString(), {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${currentToken}` },
       });
       if (response.ok) {
         const userData = await response.json();
@@ -216,45 +303,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const forgotPassword = async (email: string): Promise<{ success: boolean; error?: string; resetToken?: string }> => {
+  const forgotPassword = async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch(new URL('/api/auth/forgot-password', apiUrl).toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return { success: false, error: data.error || 'Failed to send reset email' };
-      }
-
-      return { success: true, resetToken: data.resetToken };
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
-    }
-  };
-
-  const resetPassword = async (resetToken: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const response = await fetch(new URL('/api/auth/reset-password', apiUrl).toString(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: resetToken, newPassword }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return { success: false, error: data.error || 'Failed to reset password' };
-      }
-
+      await firebaseResetPassword(email);
       return { success: true };
-    } catch (error) {
-      console.error('Reset password error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
+    } catch (error: any) {
+      console.error('Forgot password error:', error);
+      let errorMessage = 'Failed to send reset email';
+      
+      if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email';
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -273,7 +336,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshUser,
         updateUser,
         forgotPassword,
-        resetPassword,
       }}
     >
       {children}

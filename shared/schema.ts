@@ -43,6 +43,7 @@ export const authProviderEnum = pgEnum("auth_provider", [
   "email",
   "google",
   "facebook",
+  "phone",
 ]);
 
 export const users = pgTable("users", {
@@ -53,6 +54,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password"),
   authProvider: authProviderEnum("auth_provider").default("email"),
+  firebaseUid: text("firebase_uid").unique(),
   googleId: text("google_id"),
   facebookId: text("facebook_id"),
   fullName: text("full_name"),
