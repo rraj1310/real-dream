@@ -7,7 +7,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -101,7 +101,7 @@ export default function NotificationsScreen() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -122,10 +122,10 @@ export default function NotificationsScreen() {
               </ThemedText>
             </View>
             <Pressable
-              style={[styles.markAllButton, { backgroundColor: theme.backgroundSecondary }]}
+              style={[styles.markAllButton, { backgroundColor: "rgba(45, 39, 82, 0.6)" }]}
             >
-              <Feather name="check-circle" size={16} color={theme.accent} />
-              <ThemedText type="xs" style={{ color: theme.accent, marginLeft: 4 }}>
+              <Feather name="check-circle" size={16} color="#A78BFA" />
+              <ThemedText type="xs" style={{ color: "#A78BFA", marginLeft: 4 }}>
                 Mark all read
               </ThemedText>
             </Pressable>
@@ -141,9 +141,9 @@ export default function NotificationsScreen() {
               onPress={() => handleNotificationPress(notification)}
               style={[
                 styles.notificationCard,
-                { backgroundColor: theme.backgroundDefault },
+                { backgroundColor: "rgba(45, 39, 82, 0.6)" },
                 !notification.read
-                  ? { borderLeftWidth: 3, borderLeftColor: theme.accent }
+                  ? { borderLeftWidth: 3, borderLeftColor: "#A78BFA" }
                   : null,
               ]}
             >
@@ -187,7 +187,7 @@ export default function NotificationsScreen() {
           </Animated.View>
         ))}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 

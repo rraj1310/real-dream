@@ -9,7 +9,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -113,13 +113,13 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           style={[
             styles.messageBubble,
             isMe
-              ? { backgroundColor: theme.link }
-              : { backgroundColor: theme.backgroundSecondary },
+              ? { backgroundColor: "#7C3AED" }
+              : { backgroundColor: "rgba(45, 39, 82, 0.6)" },
           ]}
         >
           <ThemedText
             type="body"
-            style={{ color: isMe ? "#FFFFFF" : theme.text }}
+            style={{ color: "#FFFFFF" }}
           >
             {item.content}
           </ThemedText>
@@ -127,7 +127,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             type="xs"
             style={[
               styles.messageTime,
-              { color: isMe ? "rgba(255,255,255,0.7)" : theme.textMuted },
+              { color: isMe ? "rgba(255,255,255,0.7)" : "#C4B5FD" },
             ]}
           >
             {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -147,17 +147,17 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       >
         <Feather name="message-circle" size={32} color="#FFFFFF" />
       </LinearGradient>
-      <ThemedText type="body" style={[styles.emptyText, { color: theme.textSecondary }]}>
+      <ThemedText type="body" style={[styles.emptyText, { color: "#C4B5FD" }]}>
         No messages yet
       </ThemedText>
-      <ThemedText type="small" style={{ color: theme.textMuted }}>
+      <ThemedText type="small" style={{ color: "#8B7FC7" }}>
         Start the conversation with {otherUserName}
       </ThemedText>
     </View>
   );
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -188,19 +188,19 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           style={[
             styles.inputContainer,
             {
-              backgroundColor: theme.backgroundDefault,
+              backgroundColor: "#0D0B1E",
               paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.md,
-              borderTopColor: theme.border,
+              borderTopColor: "rgba(139, 127, 199, 0.3)",
             },
           ]}
         >
           <TextInput
             style={[
               styles.textInput,
-              { backgroundColor: theme.backgroundSecondary, color: theme.text },
+              { backgroundColor: "rgba(45, 39, 82, 0.6)", color: "#FFFFFF" },
             ]}
             placeholder="Type a message..."
-            placeholderTextColor={theme.textMuted}
+            placeholderTextColor="#8B7FC7"
             value={newMessage}
             onChangeText={setNewMessage}
             multiline
@@ -212,7 +212,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             disabled={isSending || !newMessage.trim()}
             style={[
               styles.sendButton,
-              { backgroundColor: newMessage.trim() ? theme.link : theme.backgroundSecondary },
+              { backgroundColor: newMessage.trim() ? "#7C3AED" : "rgba(45, 39, 82, 0.6)" },
             ]}
             testID="button-send-message"
           >
@@ -222,13 +222,13 @@ export default function ChatScreen({ route }: ChatScreenProps) {
               <Feather
                 name="send"
                 size={20}
-                color={newMessage.trim() ? "#FFFFFF" : theme.textMuted}
+                color={newMessage.trim() ? "#FFFFFF" : "#C4B5FD"}
               />
             )}
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 

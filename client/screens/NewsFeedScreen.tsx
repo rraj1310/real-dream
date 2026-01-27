@@ -8,7 +8,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
@@ -169,7 +169,7 @@ export default function NewsFeedScreen() {
   const displayPosts = feedPosts.length > 0 ? feedPosts : [];
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -236,7 +236,7 @@ export default function NewsFeedScreen() {
                   </View>
                 ) : null}
 
-                <View style={[styles.postActions, { borderTopColor: theme.border }]}>
+                <View style={[styles.postActions, { borderTopColor: "rgba(139, 127, 199, 0.3)" }]}>
                   <Pressable
                     onPress={() => handleLike(post.id)}
                     style={styles.actionButton}
@@ -302,7 +302,7 @@ export default function NewsFeedScreen() {
                   </View>
                 ) : null}
 
-                <View style={[styles.postActions, { borderTopColor: theme.border }]}>
+                <View style={[styles.postActions, { borderTopColor: "rgba(139, 127, 199, 0.3)" }]}>
                   <Pressable style={styles.actionButton}>
                     <Feather name="heart" size={18} color={theme.textSecondary} />
                     <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
@@ -324,7 +324,7 @@ export default function NewsFeedScreen() {
           ))
         )}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 

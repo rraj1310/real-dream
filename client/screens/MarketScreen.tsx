@@ -8,7 +8,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
@@ -116,7 +116,7 @@ export default function MarketScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -227,7 +227,7 @@ export default function MarketScreen() {
           </View>
         )}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 

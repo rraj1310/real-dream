@@ -8,7 +8,7 @@ import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
@@ -127,7 +127,7 @@ export default function SubscriptionScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -278,7 +278,7 @@ export default function SubscriptionScreen() {
           ) : null}
         </View>
       </Modal>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 

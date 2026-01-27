@@ -8,7 +8,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { getApiUrl } from "@/lib/query-client";
@@ -96,7 +96,7 @@ export default function GalleryScreen() {
   const displayItems = galleryPosts.length > 0 ? galleryPosts : [];
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -206,7 +206,7 @@ export default function GalleryScreen() {
           </View>
         )}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 

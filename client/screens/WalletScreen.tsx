@@ -7,7 +7,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
@@ -91,7 +91,7 @@ export default function WalletScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -214,7 +214,7 @@ export default function WalletScreen() {
               Recent Transactions
             </ThemedText>
             {isLoading ? (
-              <ActivityIndicator size="large" color={theme.primary} />
+              <ActivityIndicator size="large" color="#A78BFA" />
             ) : transactions.length === 0 ? (
               <Card style={styles.emptyCard}>
                 <Feather name="inbox" size={40} color={theme.textMuted} />
@@ -309,7 +309,7 @@ export default function WalletScreen() {
           </Animated.View>
         )}
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -348,9 +348,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xs,
   },
   actionButtonOutline: {
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "rgba(139, 127, 199, 0.3)",
   },
   actionText: {
     color: "#FFFFFF",
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   transactionBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "rgba(139, 127, 199, 0.3)",
   },
   transactionIcon: {
     width: 40,

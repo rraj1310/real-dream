@@ -6,7 +6,7 @@ import { Feather } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -76,7 +76,7 @@ export default function WallOfFameScreen() {
   ];
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -246,7 +246,7 @@ export default function WallOfFameScreen() {
           </Card>
         </Animated.View>
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.lg,
     backgroundColor: "#8B5CF6",
     borderWidth: 4,
-    borderColor: "#F3E8FF",
+    borderColor: "rgba(139, 127, 199, 0.3)",
   },
   avatarText: {
     color: "#FFFFFF",
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   famerBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "rgba(139, 127, 199, 0.3)",
   },
   famerHeader: {
     flexDirection: "row",
@@ -372,13 +372,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   yearBadge: {
-    backgroundColor: "#F3E8FF",
+    backgroundColor: "rgba(124, 58, 237, 0.3)",
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: BorderRadius.full,
   },
   yearText: {
-    color: "#7C3AED",
+    color: "#A78BFA",
     fontWeight: "500",
   },
   famerStats: {
