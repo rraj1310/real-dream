@@ -277,8 +277,46 @@ class DatabaseStorage implements IStorage {
     return query.orderBy(desc(champions.points));
   }
 
-  async getWallOfFame(period: string): Promise<User[]> {
-    return db.select().from(users).orderBy(desc(users.totalPoints)).limit(50);
+  async getWallOfFame(period: string): Promise<any[]> {
+    const now = new Date();
+    let dateFilter: Date | undefined;
+    
+    if (period === 'monthly') {
+      dateFilter = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (period === 'yearly') {
+      dateFilter = new Date(now.getFullYear(), 0, 1);
+    }
+    
+    const allUsers = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        totalPoints: users.totalPoints,
+        awards: users.awards,
+        profileImage: users.profileImage,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .orderBy(desc(users.totalPoints))
+      .limit(20);
+
+    const usersWithDreams = await Promise.all(
+      allUsers.map(async (user) => {
+        const userDreams = await db
+          .select()
+          .from(dreams)
+          .where(eq(dreams.userId, user.id));
+        const completedDreams = userDreams.filter((d) => d.isCompleted).length;
+        return {
+          ...user,
+          dreamsCompleted: completedDreams,
+          totalDreams: userDreams.length,
+        };
+      })
+    );
+
+    return usersWithDreams;
   }
 
   async getLeaderboard(limit: number): Promise<any[]> {
@@ -387,6 +425,16 @@ class DatabaseStorage implements IStorage {
       .from(marketItems)
       .where(eq(marketItems.isActive, true))
       .orderBy(desc(marketItems.createdAt));
+  }
+
+  async createMarketItem(itemData: Partial<typeof marketItems.$inferInsert>): Promise<any> {
+    const [item] = await db.insert(marketItems).values(itemData as any).returning();
+    return item;
+  }
+
+  async getMarketItemCount(): Promise<number> {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(marketItems);
+    return result[0]?.count || 0;
   }
 
   async getUserByGoogleId(googleId: string): Promise<User | undefined> {
@@ -498,6 +546,13 @@ class DatabaseStorage implements IStorage {
 
   async removeDreamMember(dreamId: string, userId: string): Promise<void> {
     await db.delete(dreamMembers).where(and(eq(dreamMembers.dreamId, dreamId), eq(dreamMembers.userId, userId)));
+  }
+
+  async isDreamMember(dreamId: string, userId: string): Promise<boolean> {
+    const [member] = await db.select().from(dreamMembers).where(
+      and(eq(dreamMembers.dreamId, dreamId), eq(dreamMembers.userId, userId))
+    );
+    return !!member;
   }
 
   async getDreamTasks(dreamId: string): Promise<DreamTask[]> {

@@ -488,6 +488,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!dream) {
         return res.status(404).json({ error: "Dream not found" });
       }
+      
+      // Security check: Personal dreams only visible to owner
+      if (dream.type === "personal" && dream.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // For group/challenge dreams, check if user is a member
+      if (dream.type !== "personal" && dream.userId !== req.user!.id) {
+        const isMember = await storage.isDreamMember(id, req.user!.id);
+        if (!isMember) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      }
+      
       res.json(dream);
     } catch (error) {
       res.status(500).json({ error: "Failed to get dream" });
@@ -497,10 +511,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/dreams/:id", authMiddleware, async (req: AuthRequest, res) => {
     try {
       const id = req.params.id as string;
-      const dream = await storage.updateDream(id, req.body);
-      if (!dream) {
+      const existingDream = await storage.getDream(id);
+      if (!existingDream) {
         return res.status(404).json({ error: "Dream not found" });
       }
+      
+      // Security check: Only owner can update dream
+      if (existingDream.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const dream = await storage.updateDream(id, req.body);
       res.json(dream);
     } catch (error) {
       res.status(500).json({ error: "Failed to update dream" });
@@ -510,6 +531,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/dreams/:id", authMiddleware, async (req: AuthRequest, res) => {
     try {
       const id = req.params.id as string;
+      const existingDream = await storage.getDream(id);
+      if (!existingDream) {
+        return res.status(404).json({ error: "Dream not found" });
+      }
+      
+      // Security check: Only owner can delete dream
+      if (existingDream.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       await storage.deleteDream(id);
       res.json({ success: true });
     } catch (error) {
@@ -520,6 +551,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dreams/:dreamId/tasks", authMiddleware, async (req: AuthRequest, res) => {
     try {
       const dreamId = req.params.dreamId as string;
+      
+      // Security check: Verify user has access to this dream
+      const dream = await storage.getDream(dreamId);
+      if (!dream) {
+        return res.status(404).json({ error: "Dream not found" });
+      }
+      
+      if (dream.type === "personal" && dream.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      if (dream.type !== "personal" && dream.userId !== req.user!.id) {
+        const isMember = await storage.isDreamMember(dreamId, req.user!.id);
+        if (!isMember) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      }
+      
       const tasks = await storage.getDreamTasks(dreamId);
       res.json(tasks);
     } catch (error) {
@@ -884,6 +933,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(items);
     } catch (error) {
       res.status(500).json({ error: "Failed to get market items" });
+    }
+  });
+
+  // Seed market items if none exist
+  app.post("/api/seed/market", async (req, res) => {
+    try {
+      const count = await storage.getMarketItemCount();
+      if (count > 0) {
+        return res.json({ message: "Market already seeded", count });
+      }
+
+      // Get or create a system user for market items
+      let systemUser = await storage.getUserByUsername("realdream_system");
+      if (!systemUser) {
+        const hashedPassword = await bcrypt.hash("not-a-real-password-12345", 10);
+        systemUser = await storage.createUser({
+          email: "system@realdream.app",
+          username: "realdream_system",
+          fullName: "Real Dream System",
+          password: hashedPassword,
+          authProvider: "email",
+        });
+      }
+      const systemUserId = systemUser.id;
+      
+      const marketItemsData = [
+        { title: "Premium Badge Pack", description: "Unlock exclusive badges to showcase your achievements", category: "Badges", price: 299, userId: systemUserId, isActive: true },
+        { title: "Gold Achievement Badge", description: "A prestigious gold badge for top performers", category: "Badges", price: 199, userId: systemUserId, isActive: true },
+        { title: "Custom Avatar Frame", description: "Stand out from the crowd with unique avatar frames", category: "Customization", price: 199, userId: systemUserId, isActive: true },
+        { title: "Profile Theme Pack", description: "Personalize your profile with beautiful themes", category: "Customization", price: 249, userId: systemUserId, isActive: true },
+        { title: "Streak Booster", description: "Boost your streak progress by 2x for 7 days", category: "Boosters", price: 149, userId: systemUserId, isActive: true },
+        { title: "XP Multiplier", description: "Double your XP gain for 24 hours", category: "Boosters", price: 99, userId: systemUserId, isActive: true },
+        { title: "Galaxy Theme", description: "Beautiful galaxy-themed profile customization", category: "Themes", price: 399, userId: systemUserId, isActive: true },
+        { title: "Sunset Theme", description: "Warm sunset colors for your profile", category: "Themes", price: 299, userId: systemUserId, isActive: true },
+        { title: "Exclusive Stickers", description: "Fun stickers for chat and celebrations", category: "Stickers", price: 99, userId: systemUserId, isActive: true },
+        { title: "Celebration Pack", description: "Animated celebration stickers", category: "Stickers", price: 149, userId: systemUserId, isActive: true },
+      ];
+
+      for (const item of marketItemsData) {
+        await storage.createMarketItem(item);
+      }
+
+      res.json({ message: "Market seeded successfully", count: marketItemsData.length });
+    } catch (error) {
+      console.error("Failed to seed market:", error);
+      res.status(500).json({ error: "Failed to seed market items" });
     }
   });
 

@@ -308,32 +308,32 @@ export default function WallOfFameScreen() {
                       index < hallOfFamers.length - 1 ? styles.famerBorder : null,
                     ]}
                   >
-                <View style={styles.famerHeader}>
-                  <ThemedText type="body" style={styles.famerName}>
-                    {famer.name}
-                  </ThemedText>
-                  <View style={styles.yearBadge}>
-                    <ThemedText type="xs" style={styles.yearText}>
-                      {famer.year}
+                    <View style={styles.famerHeader}>
+                      <ThemedText type="body" style={styles.famerName}>
+                        {famer.name}
+                      </ThemedText>
+                      <View style={styles.yearBadge}>
+                        <ThemedText type="xs" style={styles.yearText}>
+                          {famer.year}
+                        </ThemedText>
+                      </View>
+                    </View>
+                    <ThemedText
+                      type="small"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      {famer.category}
                     </ThemedText>
+                    <View style={styles.famerStats}>
+                      <Feather name="trending-up" size={16} color={theme.textMuted} />
+                      <ThemedText
+                        type="small"
+                        style={{ color: theme.textMuted, marginLeft: 4 }}
+                      >
+                        {famer.count} total
+                      </ThemedText>
+                    </View>
                   </View>
-                </View>
-                <ThemedText
-                  type="small"
-                  style={{ color: theme.textSecondary }}
-                >
-                  {famer.category}
-                </ThemedText>
-                <View style={styles.famerStats}>
-                  <Feather name="trending-up" size={16} color={theme.textMuted} />
-                  <ThemedText
-                    type="small"
-                    style={{ color: theme.textMuted, marginLeft: 4 }}
-                  >
-                    {famer.count} total
-                  </ThemedText>
-                </View>
-              </View>
                 ))}
               </Card>
             </Animated.View>
