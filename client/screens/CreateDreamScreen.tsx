@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, StyleSheet, Pressable, TextInput, ScrollView, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
@@ -28,13 +28,20 @@ export default function CreateDreamScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const { theme } = useTheme();
   const { token } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedType, setSelectedType] = useState<DreamTypeOption>("personal");
+  const [selectedType, setSelectedType] = useState<DreamTypeOption>(route.params?.type || "personal");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (route.params?.type) {
+      setSelectedType(route.params.type);
+    }
+  }, [route.params?.type]);
 
   const handleCreate = async () => {
     if (!title.trim()) {
@@ -76,7 +83,7 @@ export default function CreateDreamScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <GalaxyBackground>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -90,13 +97,13 @@ export default function CreateDreamScreen() {
       >
         <Animated.View entering={FadeInDown.springify()}>
           <ThemedText type="h2" style={styles.title}>Create Your Dream</ThemedText>
-          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
+          <ThemedText type="body" style={styles.subtitle}>
             Set a goal and start your journey
           </ThemedText>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
+          <ThemedText type="small" style={styles.label}>
             DREAM TYPE
           </ThemedText>
           <View style={styles.typeContainer}>
@@ -109,18 +116,18 @@ export default function CreateDreamScreen() {
                 }}
                 style={[
                   styles.typeButton,
-                  { backgroundColor: selectedType === dt.type ? dt.color : theme.backgroundSecondary },
+                  { backgroundColor: selectedType === dt.type ? dt.color : "rgba(45, 39, 82, 0.6)" },
                 ]}
               >
                 <Feather
                   name={dt.icon}
                   size={20}
-                  color={selectedType === dt.type ? "#FFFFFF" : theme.textSecondary}
+                  color={selectedType === dt.type ? "#FFFFFF" : "#C4B5FD"}
                 />
                 <ThemedText
                   type="small"
                   style={{
-                    color: selectedType === dt.type ? "#FFFFFF" : theme.textSecondary,
+                    color: selectedType === dt.type ? "#FFFFFF" : "#C4B5FD",
                     fontWeight: selectedType === dt.type ? "600" : "400",
                   }}
                 >
@@ -132,29 +139,29 @@ export default function CreateDreamScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).springify()}>
-          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
+          <ThemedText type="small" style={styles.label}>
             DREAM TITLE
           </ThemedText>
           <TextInput
-            style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
+            style={styles.input}
             value={title}
             onChangeText={setTitle}
             placeholder="e.g., Learn to play guitar"
-            placeholderTextColor={theme.textMuted}
+            placeholderTextColor="#8B7FC7"
             testID="input-dream-title"
           />
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(300).springify()}>
-          <ThemedText type="small" style={[styles.label, { color: theme.textSecondary }]}>
+          <ThemedText type="small" style={styles.label}>
             DESCRIPTION (OPTIONAL)
           </ThemedText>
           <TextInput
-            style={[styles.input, styles.textArea, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
+            style={[styles.input, styles.textArea]}
             value={description}
             onChangeText={setDescription}
             placeholder="Describe your dream in detail..."
-            placeholderTextColor={theme.textMuted}
+            placeholderTextColor="#8B7FC7"
             multiline
             numberOfLines={4}
             testID="input-dream-description"
@@ -183,14 +190,11 @@ export default function CreateDreamScreen() {
           </Button>
         </Animated.View>
       </ScrollView>
-    </ThemedView>
+    </GalaxyBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   scrollView: {
     flex: 1,
   },
@@ -201,14 +205,17 @@ const styles = StyleSheet.create({
   title: {
     textAlign: "center",
     marginBottom: Spacing.xs,
+    color: "#FFFFFF",
   },
   subtitle: {
     textAlign: "center",
+    color: "#C4B5FD",
   },
   label: {
     fontWeight: "600",
     letterSpacing: 0.5,
     marginBottom: Spacing.sm,
+    color: "#C4B5FD",
   },
   typeContainer: {
     flexDirection: "row",
@@ -227,6 +234,10 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
     padding: Spacing.lg,
     fontSize: 16,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    color: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(139, 127, 199, 0.3)",
   },
   textArea: {
     minHeight: 100,

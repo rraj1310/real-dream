@@ -161,14 +161,6 @@ export default function MainMenuScreen() {
                 {user?.fullName || user?.username || "Dreamer"}
               </ThemedText>
             </View>
-            <View style={styles.headerActions}>
-              <Pressable onPress={handleNotifications} style={styles.headerButton}>
-                <Feather name="bell" size={22} color="#C4B5FD" />
-              </Pressable>
-              <Pressable onPress={handleMessages} style={styles.headerButton}>
-                <Feather name="message-circle" size={22} color="#C4B5FD" />
-              </Pressable>
-            </View>
           </View>
 
           <View style={styles.coinBalanceCard}>
