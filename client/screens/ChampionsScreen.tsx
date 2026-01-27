@@ -1,15 +1,18 @@
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useState } from "react";
+import { View, StyleSheet, ScrollView, Pressable, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -18,13 +21,43 @@ type Champion = {
   name: string;
   dreams: number;
   color: string;
-  medal: string;
+  medal: "gold" | "silver" | "bronze";
+  description: string;
+  totalPoints: number;
+  achievements: number;
 };
 
 const topChampions: Champion[] = [
-  { rank: 1, name: "Alex Johnson", dreams: 156, color: "#EAB308", medal: "gold" },
-  { rank: 2, name: "Sarah Williams", dreams: 142, color: "#9CA3AF", medal: "silver" },
-  { rank: 3, name: "Mike Chen", dreams: 138, color: "#EA580C", medal: "bronze" },
+  {
+    rank: 1,
+    name: "Alex Johnson",
+    dreams: 156,
+    color: "#EAB308",
+    medal: "gold",
+    description: "Top achiever of the month with exceptional goal completion rate",
+    totalPoints: 4850,
+    achievements: 28,
+  },
+  {
+    rank: 2,
+    name: "Sarah Williams",
+    dreams: 142,
+    color: "#9CA3AF",
+    medal: "silver",
+    description: "Consistent performer with excellent time management",
+    totalPoints: 4200,
+    achievements: 24,
+  },
+  {
+    rank: 3,
+    name: "Mike Chen",
+    dreams: 138,
+    color: "#EA580C",
+    medal: "bronze",
+    description: "Rising champion with impressive improvement trajectory",
+    totalPoints: 3900,
+    achievements: 22,
+  },
 ];
 
 type RisingStar = {
@@ -39,6 +72,12 @@ const risingStars: RisingStar[] = [
   { name: "Lisa Brown", category: "Career", achievements: 35 },
 ];
 
+const medalColors = {
+  gold: ["#EAB308", "#FCD34D"],
+  silver: ["#6B7280", "#9CA3AF"],
+  bronze: ["#EA580C", "#FB923C"],
+};
+
 export default function ChampionsScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -46,9 +85,23 @@ export default function ChampionsScreen() {
   const navigation = useNavigation<any>();
   const { theme } = useTheme();
 
+  const [selectedChampion, setSelectedChampion] = useState<Champion | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
   const handleNavigateToWallOfFame = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("WallOfFame");
+  };
+
+  const handleChampionPress = (champion: Champion) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedChampion(champion);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setTimeout(() => setSelectedChampion(null), 300);
   };
 
   return (
@@ -70,16 +123,21 @@ export default function ChampionsScreen() {
             onPress={handleNavigateToWallOfFame}
             style={styles.linkCard}
           >
-            <View style={[styles.linkIcon, { backgroundColor: "#FEF3C7" }]}>
-              <Feather name="award" size={24} color="#D97706" />
-            </View>
+            <LinearGradient
+              colors={["#EAB308", "#F59E0B"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.linkIcon}
+            >
+              <Feather name="award" size={24} color="#FFFFFF" />
+            </LinearGradient>
             <View style={styles.linkContent}>
               <ThemedText type="body" style={styles.linkTitle}>
                 Hall of Fame
               </ThemedText>
               <ThemedText
                 type="small"
-                style={[styles.linkDescription, { color: theme.textSecondary }]}
+                style={{ color: theme.textSecondary }}
               >
                 View legendary achievers
               </ThemedText>
@@ -93,16 +151,21 @@ export default function ChampionsScreen() {
             onPress={handleNavigateToWallOfFame}
             style={styles.linkCard}
           >
-            <View style={[styles.linkIcon, { backgroundColor: "#F3E8FF" }]}>
-              <Feather name="star" size={24} color="#7C3AED" />
-            </View>
+            <LinearGradient
+              colors={["#8B5CF6", "#A855F7"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.linkIcon}
+            >
+              <Feather name="star" size={24} color="#FFFFFF" />
+            </LinearGradient>
             <View style={styles.linkContent}>
               <ThemedText type="body" style={styles.linkTitle}>
                 Wall of Fame
               </ThemedText>
               <ThemedText
                 type="small"
-                style={[styles.linkDescription, { color: theme.textSecondary }]}
+                style={{ color: theme.textSecondary }}
               >
                 Celebrate top performers
               </ThemedText>
@@ -112,26 +175,37 @@ export default function ChampionsScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).springify()}>
-          <ThemedText
-            type="xs"
-            style={[styles.sectionLabel, { color: theme.textSecondary }]}
-          >
-            TOP CHAMPIONS THIS MONTH
-          </ThemedText>
+          <View style={styles.sectionHeader}>
+            <ThemedText
+              type="xs"
+              style={[styles.sectionLabel, { color: theme.textSecondary }]}
+            >
+              TOP CHAMPIONS THIS MONTH
+            </ThemedText>
+            <Pressable onPress={handleNavigateToWallOfFame}>
+              <ThemedText type="small" style={{ color: theme.accent }}>
+                See All
+              </ThemedText>
+            </Pressable>
+          </View>
           <Card style={styles.championsCard}>
             {topChampions.map((champion, index) => (
-              <View
+              <Pressable
                 key={champion.rank}
+                onPress={() => handleChampionPress(champion)}
                 style={[
                   styles.championRow,
-                  index < topChampions.length - 1 ? styles.championBorder : null,
+                  index < topChampions.length - 1 ? { borderBottomWidth: 1, borderBottomColor: theme.border } : null,
                 ]}
               >
-                <View
-                  style={[styles.rankBadge, { backgroundColor: champion.color }]}
+                <LinearGradient
+                  colors={medalColors[champion.medal]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.rankBadge}
                 >
                   <ThemedText style={styles.rankText}>#{champion.rank}</ThemedText>
-                </View>
+                </LinearGradient>
                 <View style={styles.championInfo}>
                   <ThemedText type="body" style={styles.championName}>
                     {champion.name}
@@ -143,8 +217,14 @@ export default function ChampionsScreen() {
                     {champion.dreams} dreams completed
                   </ThemedText>
                 </View>
-                <Feather name="award" size={24} color="#EAB308" />
-              </View>
+                <View style={styles.medalContainer}>
+                  <Feather
+                    name={champion.medal === "gold" ? "award" : champion.medal === "silver" ? "star" : "hexagon"}
+                    size={24}
+                    color={champion.color}
+                  />
+                </View>
+              </Pressable>
             ))}
           </Card>
         </Animated.View>
@@ -162,12 +242,17 @@ export default function ChampionsScreen() {
                 key={star.name}
                 style={[
                   styles.starRow,
-                  index < risingStars.length - 1 ? styles.starBorder : null,
+                  index < risingStars.length - 1 ? { borderBottomWidth: 1, borderBottomColor: theme.border } : null,
                 ]}
               >
-                <View style={styles.starAvatar}>
-                  <Feather name="award" size={20} color="#FFFFFF" />
-                </View>
+                <LinearGradient
+                  colors={["#8B5CF6", "#EC4899"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.starAvatar}
+                >
+                  <Feather name="trending-up" size={18} color="#FFFFFF" />
+                </LinearGradient>
                 <View style={styles.starInfo}>
                   <ThemedText type="body" style={styles.starName}>
                     {star.name}
@@ -179,11 +264,92 @@ export default function ChampionsScreen() {
                     {star.category} - {star.achievements} achievements
                   </ThemedText>
                 </View>
+                <Feather name="star" size={20} color={theme.yellow} />
               </View>
             ))}
           </Card>
         </Animated.View>
       </ScrollView>
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalOverlay}>
+          {selectedChampion ? (
+            <Animated.View
+              entering={FadeIn}
+              style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}
+            >
+              <LinearGradient
+                colors={medalColors[selectedChampion.medal]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.modalHeader}
+              >
+                <View style={styles.modalMedal}>
+                  <Feather name="award" size={48} color="#FFFFFF" />
+                </View>
+                <ThemedText style={styles.modalRank}>
+                  #{selectedChampion.rank}
+                </ThemedText>
+                <ThemedText style={styles.modalMedalType}>
+                  {selectedChampion.medal.toUpperCase()} MEDALIST
+                </ThemedText>
+              </LinearGradient>
+
+              <View style={styles.modalBody}>
+                <ThemedText type="h3" style={styles.modalName}>
+                  {selectedChampion.name}
+                </ThemedText>
+
+                <ThemedText
+                  type="body"
+                  style={[styles.modalDescription, { color: theme.textSecondary }]}
+                >
+                  {selectedChampion.description}
+                </ThemedText>
+
+                <View style={styles.statsGrid}>
+                  <View style={[styles.statCard, { backgroundColor: theme.backgroundSecondary }]}>
+                    <Feather name="target" size={24} color={theme.accent} />
+                    <ThemedText type="h3" style={styles.statValue}>
+                      {selectedChampion.dreams}
+                    </ThemedText>
+                    <ThemedText type="xs" style={{ color: theme.textSecondary }}>
+                      Dreams
+                    </ThemedText>
+                  </View>
+                  <View style={[styles.statCard, { backgroundColor: theme.backgroundSecondary }]}>
+                    <Feather name="star" size={24} color={theme.yellow} />
+                    <ThemedText type="h3" style={styles.statValue}>
+                      {selectedChampion.totalPoints.toLocaleString()}
+                    </ThemedText>
+                    <ThemedText type="xs" style={{ color: theme.textSecondary }}>
+                      Points
+                    </ThemedText>
+                  </View>
+                  <View style={[styles.statCard, { backgroundColor: theme.backgroundSecondary }]}>
+                    <Feather name="award" size={24} color={theme.purple} />
+                    <ThemedText type="h3" style={styles.statValue}>
+                      {selectedChampion.achievements}
+                    </ThemedText>
+                    <ThemedText type="xs" style={{ color: theme.textSecondary }}>
+                      Awards
+                    </ThemedText>
+                  </View>
+                </View>
+
+                <Button onPress={handleCloseModal} style={styles.closeButton}>
+                  Close
+                </Button>
+              </View>
+            </Animated.View>
+          ) : null}
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -219,11 +385,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 2,
   },
-  linkDescription: {},
-  sectionLabel: {
-    fontWeight: "500",
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: Spacing.sm,
     paddingHorizontal: Spacing.xs,
+  },
+  sectionLabel: {
+    fontWeight: "500",
     letterSpacing: 0.5,
   },
   championsCard: {
@@ -233,10 +403,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: Spacing.md,
-  },
-  championBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
   },
   rankBadge: {
     width: 48,
@@ -258,6 +424,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 2,
   },
+  medalContainer: {
+    padding: Spacing.xs,
+  },
   starsCard: {
     padding: 0,
     overflow: "hidden",
@@ -267,10 +436,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.lg,
   },
-  starBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
   starAvatar: {
     width: 40,
     height: 40,
@@ -278,7 +443,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: Spacing.md,
-    backgroundColor: "#8B5CF6",
   },
   starInfo: {
     flex: 1,
@@ -286,5 +450,64 @@ const styles = StyleSheet.create({
   starName: {
     fontWeight: "600",
     marginBottom: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.xl,
+  },
+  modalContent: {
+    width: "100%",
+    borderRadius: BorderRadius.xl,
+    overflow: "hidden",
+  },
+  modalHeader: {
+    alignItems: "center",
+    paddingVertical: Spacing["3xl"],
+  },
+  modalMedal: {
+    marginBottom: Spacing.md,
+  },
+  modalRank: {
+    color: "#FFFFFF",
+    fontSize: 32,
+    fontWeight: "700",
+    marginBottom: Spacing.xs,
+  },
+  modalMedalType: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 1,
+  },
+  modalBody: {
+    padding: Spacing.xl,
+  },
+  modalName: {
+    textAlign: "center",
+    marginBottom: Spacing.sm,
+  },
+  modalDescription: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: "center",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  statValue: {
+    marginVertical: Spacing.xs,
+  },
+  closeButton: {
+    width: "100%",
   },
 });
