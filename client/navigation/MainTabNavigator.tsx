@@ -5,14 +5,12 @@ import { BlurView } from "expo-blur";
 import { Platform, StyleSheet } from "react-native";
 
 import HomeStackNavigator from "@/navigation/HomeStackNavigator";
-import RealDreamStackNavigator from "@/navigation/RealDreamStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
 import SettingsStackNavigator from "@/navigation/SettingsStackNavigator";
 import { useTheme } from "@/hooks/useTheme";
 
 export type MainTabParamList = {
   HomeTab: undefined;
-  RealDreamTab: undefined;
   ProfileTab: undefined;
   SettingsTab: undefined;
 };
@@ -56,16 +54,6 @@ export default function MainTabNavigator() {
           title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Feather name="home" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="RealDreamTab"
-        component={RealDreamStackNavigator}
-        options={{
-          title: "RealDream",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="target" size={size} color={color} />
           ),
         }}
       />

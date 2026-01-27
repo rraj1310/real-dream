@@ -13,6 +13,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -255,6 +256,8 @@ export default function ProfileScreen() {
           </Card>
         </Animated.View>
 
+        <AdBanner variant="compact" />
+
         <Animated.View entering={FadeInDown.delay(100).springify()}>
           <Card
             onPress={() => handleNavigate(connectionItem.route)}
@@ -374,7 +377,7 @@ export default function ProfileScreen() {
             <ThemedText type="h3" style={styles.modalTitle}>Edit Profile</ThemedText>
             <ThemedText type="small" style={[styles.inputLabel, { color: theme.textSecondary }]}>Full Name</ThemedText>
             <TextInput
-              style={[styles.textInput, { backgroundColor: theme.backgroundSecondary, color: theme.textPrimary }]}
+              style={[styles.textInput, { backgroundColor: theme.backgroundSecondary, color: "#FFFFFF" }]}
               value={editFullName}
               onChangeText={setEditFullName}
               placeholder="Enter your full name"
@@ -382,7 +385,7 @@ export default function ProfileScreen() {
             />
             <ThemedText type="small" style={[styles.inputLabel, { color: theme.textSecondary }]}>Bio</ThemedText>
             <TextInput
-              style={[styles.textInput, styles.bioInput, { backgroundColor: theme.backgroundSecondary, color: theme.textPrimary }]}
+              style={[styles.textInput, styles.bioInput, { backgroundColor: theme.backgroundSecondary, color: "#FFFFFF" }]}
               value={editBio}
               onChangeText={setEditBio}
               placeholder="Tell us about yourself"

@@ -10,6 +10,10 @@ import NewsFeedScreen from "@/screens/NewsFeedScreen";
 import MessagesScreen from "@/screens/MessagesScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import LuckySpinScreen from "@/screens/LuckySpinScreen";
+import MyRealDreamScreen from "@/screens/MyRealDreamScreen";
+import PersonalDreamsScreen from "@/screens/PersonalDreamsScreen";
+import GroupDreamsScreen from "@/screens/GroupDreamsScreen";
+import ChallengeDreamsScreen from "@/screens/ChallengeDreamsScreen";
 import { HeaderTitle, HeaderIcons } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 
@@ -23,6 +27,10 @@ export type HomeStackParamList = {
   Messages: undefined;
   Notifications: undefined;
   LuckySpin: undefined;
+  MyRealDream: undefined;
+  PersonalDreams: undefined;
+  GroupDreams: undefined;
+  ChallengeDreams: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -94,6 +102,34 @@ export default function HomeStackNavigator() {
         component={LuckySpinScreen}
         options={{
           headerTitle: "LUCKY SPIN",
+        }}
+      />
+      <Stack.Screen
+        name="MyRealDream"
+        component={MyRealDreamScreen}
+        options={{
+          headerTitle: "MY REALDREAM",
+        }}
+      />
+      <Stack.Screen
+        name="PersonalDreams"
+        component={PersonalDreamsScreen}
+        options={{
+          headerTitle: "PERSONAL DREAMS",
+        }}
+      />
+      <Stack.Screen
+        name="GroupDreams"
+        component={GroupDreamsScreen}
+        options={{
+          headerTitle: "GROUP DREAMS",
+        }}
+      />
+      <Stack.Screen
+        name="ChallengeDreams"
+        component={ChallengeDreamsScreen}
+        options={{
+          headerTitle: "CHALLENGES",
         }}
       />
     </Stack.Navigator>

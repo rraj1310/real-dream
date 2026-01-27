@@ -15,6 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -30,7 +31,7 @@ const menuItems: MenuItemType[] = [
   {
     icon: "target",
     label: "My RealDream",
-    route: "RealDreamTab",
+    route: "MyRealDream",
     gradient: ["#7C3AED", "#A855F7"],
   },
   {
@@ -199,6 +200,8 @@ export default function MainMenuScreen() {
             </LinearGradient>
           </View>
         </Animated.View>
+
+        <AdBanner />
 
         <View style={styles.menuGrid}>
           {menuItems.map((item, index) => (
