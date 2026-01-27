@@ -39,13 +39,22 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "transaction",
 ]);
 
+export const authProviderEnum = pgEnum("auth_provider", [
+  "email",
+  "google",
+  "facebook",
+]);
+
 export const users = pgTable("users", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"),
+  authProvider: authProviderEnum("auth_provider").default("email"),
+  googleId: text("google_id"),
+  facebookId: text("facebook_id"),
   fullName: text("full_name"),
   phoneNumber: text("phone_number"),
   city: text("city"),
@@ -234,6 +243,33 @@ export const postComments = pgTable("post_comments", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const conversations = pgTable("conversations", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  participant1Id: varchar("participant1_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  participant2Id: varchar("participant2_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const marketItems = pgTable("market_items", {
   id: varchar("id")
     .primaryKey()
@@ -314,3 +350,5 @@ export type Connection = typeof connections.$inferSelect;
 export type Champion = typeof champions.$inferSelect;
 export type GalleryPost = typeof galleryPosts.$inferSelect;
 export type NewsFeedPost = typeof newsFeedPosts.$inferSelect;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;

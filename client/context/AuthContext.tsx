@@ -18,6 +18,7 @@ export interface User {
   createdAt: string;
   dailySpinsLeft?: number;
   lastSpinDate?: string;
+  authProvider?: string;
 }
 
 interface AuthContextType {
@@ -26,10 +27,14 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  loginWithFacebook: () => Promise<{ success: boolean; error?: string }>;
   register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
+  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; resetToken?: string }>;
+  resetPassword: (token: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 interface RegisterData {
@@ -98,6 +103,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const mockGoogleId = 'google_' + Math.random().toString(36).substring(2, 15);
+      const mockEmail = `user_${Date.now()}@gmail.com`;
+      
+      const response = await fetch(new URL('/api/auth/google', apiUrl).toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          googleId: mockGoogleId,
+          email: mockEmail,
+          fullName: 'Google User',
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Google login failed' };
+      }
+
+      await AsyncStorage.setItem('auth_token', data.token);
+      setUser(data.user);
+      setToken(data.token);
+      return { success: true };
+    } catch (error) {
+      console.error('Google login error:', error);
+      return { success: false, error: 'Google login failed. Please try again.' };
+    }
+  };
+
+  const loginWithFacebook = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const mockFacebookId = 'fb_' + Math.random().toString(36).substring(2, 15);
+      const mockEmail = `user_${Date.now()}@facebook.com`;
+      
+      const response = await fetch(new URL('/api/auth/facebook', apiUrl).toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          facebookId: mockFacebookId,
+          email: mockEmail,
+          fullName: 'Facebook User',
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Facebook login failed' };
+      }
+
+      await AsyncStorage.setItem('auth_token', data.token);
+      setUser(data.user);
+      setToken(data.token);
+      return { success: true };
+    } catch (error) {
+      console.error('Facebook login error:', error);
+      return { success: false, error: 'Facebook login failed. Please try again.' };
+    }
+  };
+
   const register = async (registerData: RegisterData): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await fetch(new URL('/api/auth/register', apiUrl).toString(), {
@@ -149,6 +216,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<{ success: boolean; error?: string; resetToken?: string }> => {
+    try {
+      const response = await fetch(new URL('/api/auth/forgot-password', apiUrl).toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Failed to send reset email' };
+      }
+
+      return { success: true, resetToken: data.resetToken };
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  };
+
+  const resetPassword = async (resetToken: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch(new URL('/api/auth/reset-password', apiUrl).toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, newPassword }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Failed to reset password' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -157,10 +266,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
+        loginWithGoogle,
+        loginWithFacebook,
         register,
         logout,
         refreshUser,
         updateUser,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}

@@ -81,6 +81,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
+      if (!user.password) {
+        return res.status(401).json({ error: "Please login with your social account" });
+      }
+
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -95,6 +99,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const { googleId, email, fullName, profileImage } = req.body;
+      
+      if (!googleId || !email) {
+        return res.status(400).json({ error: "Google ID and email are required" });
+      }
+
+      let user = await storage.getUserByGoogleId(googleId);
+      
+      if (!user) {
+        user = await storage.getUserByEmail(email);
+        if (user) {
+          user = await storage.updateUser(user.id, { googleId, authProvider: "google" as any });
+        } else {
+          const username = email.split("@")[0] + "_" + Math.random().toString(36).substring(2, 7);
+          user = await storage.createUser({
+            email,
+            username,
+            googleId,
+            fullName,
+            profileImage,
+            authProvider: "google" as any,
+            coins: 100,
+          });
+        }
+      }
+
+      if (!user) {
+        return res.status(500).json({ error: "Failed to create user" });
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword, token });
+    } catch (error) {
+      console.error("Google login error:", error);
+      res.status(500).json({ error: "Google login failed" });
+    }
+  });
+
+  app.post("/api/auth/facebook", async (req, res) => {
+    try {
+      const { facebookId, email, fullName, profileImage } = req.body;
+      
+      if (!facebookId || !email) {
+        return res.status(400).json({ error: "Facebook ID and email are required" });
+      }
+
+      let user = await storage.getUserByFacebookId(facebookId);
+      
+      if (!user) {
+        user = await storage.getUserByEmail(email);
+        if (user) {
+          user = await storage.updateUser(user.id, { facebookId, authProvider: "facebook" as any });
+        } else {
+          const username = email.split("@")[0] + "_" + Math.random().toString(36).substring(2, 7);
+          user = await storage.createUser({
+            email,
+            username,
+            facebookId,
+            fullName,
+            profileImage,
+            authProvider: "facebook" as any,
+            coins: 100,
+          });
+        }
+      }
+
+      if (!user) {
+        return res.status(500).json({ error: "Failed to create user" });
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword, token });
+    } catch (error) {
+      console.error("Facebook login error:", error);
+      res.status(500).json({ error: "Facebook login failed" });
+    }
+  });
+
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.json({ success: true, message: "If an account exists, a reset link has been sent" });
+      }
+
+      if (user.authProvider !== "email") {
+        return res.status(400).json({ error: "Please login with your social account" });
+      }
+
+      const crypto = await import("crypto");
+      const token = crypto.randomBytes(32).toString("hex");
+      await storage.createPasswordResetToken(user.id, token);
+
+      res.json({ 
+        success: true, 
+        message: "Password reset instructions sent to your email",
+        resetToken: token,
+      });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ error: "Failed to process request" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: "Token and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken) {
+        return res.status(400).json({ error: "Invalid or expired reset token" });
+      }
+
+      if (resetToken.usedAt) {
+        return res.status(400).json({ error: "Reset token already used" });
+      }
+
+      if (new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ error: "Reset token has expired" });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateUser(resetToken.userId, { password: hashedPassword });
+      await storage.markPasswordResetTokenUsed(resetToken.id);
+
+      res.json({ success: true, message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ error: "Failed to reset password" });
     }
   });
 
@@ -258,6 +418,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/conversations", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const conversations = await storage.getConversations(req.user!.id);
+      res.json(conversations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get conversations" });
+    }
+  });
+
   app.get("/api/messages", authMiddleware, async (req: AuthRequest, res) => {
     try {
       const messages = await storage.getMessages(req.user!.id);
@@ -271,6 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const targetUserId = req.params.userId as string;
       const messages = await storage.getConversation(req.user!.id, targetUserId);
+      await storage.markAllMessagesRead(req.user!.id, targetUserId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ error: "Failed to get conversation" });
@@ -286,6 +456,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(message);
     } catch (error) {
       res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
+  app.put("/api/messages/read-all", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const { otherUserId } = req.body;
+      if (otherUserId) {
+        await storage.markAllMessagesRead(req.user!.id, otherUserId);
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to mark messages as read" });
     }
   });
 

@@ -75,7 +75,18 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 ### Authentication
 - Sign In / Sign Up screens with animated logo
 - Password visibility toggle
+- **Social login**: Google and Facebook OAuth (mock implementation for demo)
+- **Forgot Password**: Email-based password reset flow with tokens
+- Password reset tokens expire after 1 hour
+- ForgotPasswordScreen for password recovery
 - Navigates to main app after auth
+
+### Real-time Messaging
+- MessagesScreen shows list of conversations with unread counts
+- ChatScreen for one-on-one messaging between users
+- Messages auto-refresh every 5 seconds
+- Mark all messages as read functionality
+- Messages marked as read when conversation is opened
 
 ### Main Menu (Home Tab)
 - Welcome message with coin balance display
@@ -175,3 +186,8 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Settings screen now shows real user data and navigates to Subscription
 - Market, Gallery, and News Feed screens now fetch real data from the database
 - API endpoints enhanced to include user information with posts
+- Added OAuth support for Google and Facebook login (mock implementation)
+- Added Forgot Password flow with email-based token reset
+- Added real-time MessagesScreen with conversation list and unread counts
+- Added ChatScreen for one-on-one messaging with auto-refresh
+- API routes added for conversations and mark messages as read

@@ -14,6 +14,8 @@ import {
   postLikes,
   postComments,
   marketItems,
+  passwordResetTokens,
+  conversations,
   type User,
   type Dream,
   type Message,
@@ -23,6 +25,8 @@ import {
   type Champion,
   type GalleryPost,
   type NewsFeedPost,
+  type PasswordResetToken,
+  type Conversation,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -375,6 +379,117 @@ class DatabaseStorage implements IStorage {
       .from(marketItems)
       .where(eq(marketItems.isActive, true))
       .orderBy(desc(marketItems.createdAt));
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user;
+  }
+
+  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.facebookId, facebookId));
+    return user;
+  }
+
+  async createPasswordResetToken(userId: string, token: string): Promise<PasswordResetToken> {
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+    const [resetToken] = await db.insert(passwordResetTokens).values({
+      userId,
+      token,
+      expiresAt,
+    }).returning();
+    return resetToken;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [resetToken] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+    return resetToken;
+  }
+
+  async markPasswordResetTokenUsed(id: string): Promise<void> {
+    await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, id));
+  }
+
+  async getConversations(userId: string): Promise<any[]> {
+    const userMessages = await db
+      .select()
+      .from(messages)
+      .where(or(eq(messages.senderId, userId), eq(messages.receiverId, userId)))
+      .orderBy(desc(messages.createdAt));
+
+    const conversationMap = new Map<string, { otherUserId: string; lastMessage: Message; unreadCount: number }>();
+
+    for (const msg of userMessages) {
+      const otherUserId = msg.senderId === userId ? msg.receiverId : msg.senderId;
+      if (!conversationMap.has(otherUserId)) {
+        conversationMap.set(otherUserId, {
+          otherUserId,
+          lastMessage: msg,
+          unreadCount: 0,
+        });
+      }
+      if (!msg.isRead && msg.receiverId === userId) {
+        const conv = conversationMap.get(otherUserId)!;
+        conv.unreadCount++;
+      }
+    }
+
+    const conversationsWithUsers = await Promise.all(
+      Array.from(conversationMap.values()).map(async (conv) => {
+        const otherUser = await this.getUser(conv.otherUserId);
+        return {
+          id: conv.otherUserId,
+          otherUser: otherUser ? {
+            id: otherUser.id,
+            username: otherUser.username,
+            fullName: otherUser.fullName,
+            profileImage: otherUser.profileImage,
+          } : null,
+          lastMessage: conv.lastMessage.content,
+          lastMessageTime: conv.lastMessage.createdAt,
+          unreadCount: conv.unreadCount,
+        };
+      })
+    );
+
+    return conversationsWithUsers.sort((a, b) => 
+      new Date(b.lastMessageTime!).getTime() - new Date(a.lastMessageTime!).getTime()
+    );
+  }
+
+  async markAllMessagesRead(userId: string, otherUserId: string): Promise<void> {
+    await db.update(messages)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(messages.senderId, otherUserId),
+          eq(messages.receiverId, userId),
+          eq(messages.isRead, false)
+        )
+      );
+  }
+
+  async addDreamMember(dreamId: string, userId: string, role: string = 'member'): Promise<void> {
+    await db.insert(dreamMembers).values({ dreamId, userId, role });
+  }
+
+  async getDreamMembers(dreamId: string): Promise<any[]> {
+    const members = await db.select().from(dreamMembers).where(eq(dreamMembers.dreamId, dreamId));
+    const membersWithUsers = await Promise.all(
+      members.map(async (member) => {
+        const user = await this.getUser(member.userId);
+        return {
+          ...member,
+          user: user ? { id: user.id, username: user.username, fullName: user.fullName, profileImage: user.profileImage } : null,
+        };
+      })
+    );
+    return membersWithUsers;
+  }
+
+  async removeDreamMember(dreamId: string, userId: string): Promise<void> {
+    await db.delete(dreamMembers).where(and(eq(dreamMembers.dreamId, dreamId), eq(dreamMembers.userId, userId)));
   }
 }
 

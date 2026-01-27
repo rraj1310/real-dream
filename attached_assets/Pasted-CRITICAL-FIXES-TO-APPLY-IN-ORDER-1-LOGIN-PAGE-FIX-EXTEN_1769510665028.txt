@@ -1,0 +1,179 @@
+CRITICAL FIXES TO APPLY (IN ORDER)
+1️⃣ LOGIN PAGE – FIX & EXTEND
+Add missing login methods:
+
+✅ Google Login (OAuth)
+
+✅ Facebook Login (OAuth)
+
+Add Forgot Credentials flow:
+
+“Forgot Password?” → Email-based password reset
+
+Secure token-based reset
+
+Works for every real user
+
+Rules:
+
+❌ No dummy emails
+
+❌ No console-only logic
+
+❌ No fake success messages
+
+2️⃣ AUTHENTICATION BACKEND (MANDATORY)
+
+Replace any hardcoded user data
+
+Implement:
+
+JWT access token
+
+Refresh token
+
+Secure password hashing
+
+Store users in database:
+
+id
+
+email
+
+auth_provider (email / google / facebook)
+
+profile data
+
+Each user must log in independently.
+
+3️⃣ HEADER ICONS – MAKE THEM REAL
+
+All header icons (⚙️ 🔔 💬 📧 💰 etc.) must:
+
+Navigate to real screens
+
+Fetch real backend data
+
+Show user-specific content only
+
+❌ No placeholder screens
+❌ No “coming soon” pages
+
+4️⃣ MESSAGES MODULE – FIX COMPLETELY
+Problems to fix:
+
+“Mark all as read” does nothing
+
+Clicking a chat does not open messages
+
+Required behavior:
+
+Clicking a chat → opens full conversation
+
+Messages stored per user in database
+
+Read/unread state tracked
+
+Real-time updates using WebSockets
+
+5️⃣ MY REAL DREAM – LOGIC CORRECTION
+CRITICAL BUG:
+
+Personal & Group flows are mixed.
+
+FIX:
+
+Personal RealDream
+
+Only personal fields
+
+No group/team inputs
+
+Group RealDream
+
+Team members required
+
+Group permissions enabled
+
+🚫 NEVER show group fields in personal flow
+🚫 NEVER show personal-only fields in group flow
+
+6️⃣ FORGOT CREDENTIALS – FULL FLOW
+
+Implement:
+
+Forgot password
+
+Email verification
+
+Token expiry
+
+Secure reset
+
+This must work in real life, not simulated.
+
+7️⃣ REMOVE ALL HARDCODED DATA
+
+Audit and remove:
+
+Hardcoded user IDs
+
+Static message arrays
+
+Fake notifications
+
+UI-only counters
+
+Replace everything with:
+
+Database calls
+
+API endpoints
+
+Auth-protected routes
+
+8️⃣ UI THEME (DO NOT CHANGE)
+
+Keep the exact theme from screenshots provided
+
+Colors, gradients, layout must remain
+
+Only logic and backend should change
+
+9️⃣ APP MUST BE STORE-READY
+
+Final output must:
+
+Build for Android & iOS
+
+Use environment variables
+
+Support production deployment
+
+Pass Play Store & App Store review basics
+
+🚨 VERY IMPORTANT INSTRUCTION TO REPLIT AI
+
+Do NOT regenerate UI.
+Do NOT simplify features.
+Do NOT mock backend.
+Modify the existing codebase only.
+If something is broken, fix it properly.
+
+✅ FINAL CHECKLIST BEFORE STOPPING
+
+ Google login works
+
+ Facebook login works
+
+ Forgot password works
+
+ Messages open correctly
+
+ Mark as read works
+
+ No hardcoded data anywhere
+
+ Personal & Group flows separated
+
+ Each user sees only their own data

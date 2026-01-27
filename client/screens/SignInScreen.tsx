@@ -27,11 +27,13 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 export default function SignInScreen({ navigation }: SignInScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const { login } = useAuth();
+  const { login, loginWithGoogle, loginWithFacebook } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [error, setError] = useState("");
 
   const logoScale = useSharedValue(1);
@@ -58,6 +60,50 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
     } else {
       setError(result.error || "Login failed");
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    setError("");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    try {
+      const result = await loginWithGoogle();
+      setIsGoogleLoading(false);
+      
+      if (result.success) {
+        navigation.replace("MainTabs");
+      } else {
+        setError(result.error || "Google login failed");
+      }
+    } catch (err) {
+      setIsGoogleLoading(false);
+      setError("Google login failed");
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setIsFacebookLoading(true);
+    setError("");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    try {
+      const result = await loginWithFacebook();
+      setIsFacebookLoading(false);
+      
+      if (result.success) {
+        navigation.replace("MainTabs");
+      } else {
+        setError(result.error || "Facebook login failed");
+      }
+    } catch (err) {
+      setIsFacebookLoading(false);
+      setError("Facebook login failed");
+    }
+  };
+
+  const handleForgotPassword = () => {
+    navigation.navigate("ForgotPassword" as any);
   };
 
   const handleLogoPress = () => {
@@ -143,7 +189,7 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
             </Pressable>
           </View>
 
-          <Pressable style={styles.forgotButton}>
+          <Pressable style={styles.forgotButton} onPress={handleForgotPassword}>
             <ThemedText type="small" style={{ color: theme.link }}>
               Forgot Password?
             </ThemedText>
@@ -158,6 +204,52 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
           <Button onPress={handleSignIn} disabled={isLoading} testID="button-signin">
             {isLoading ? <ActivityIndicator color="#FFFFFF" size="small" /> : "Sign In"}
           </Button>
+
+          <View style={styles.divider}>
+            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+            <ThemedText type="small" style={{ color: theme.textMuted, paddingHorizontal: Spacing.md }}>
+              or continue with
+            </ThemedText>
+            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+          </View>
+
+          <View style={styles.socialButtons}>
+            <Pressable
+              onPress={handleGoogleSignIn}
+              style={[styles.socialButton, { backgroundColor: theme.backgroundSecondary }]}
+              disabled={isGoogleLoading}
+              testID="button-google-signin"
+            >
+              {isGoogleLoading ? (
+                <ActivityIndicator color={theme.text} size="small" />
+              ) : (
+                <>
+                  <Feather name="mail" size={20} color="#EA4335" />
+                  <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.sm }}>
+                    Google
+                  </ThemedText>
+                </>
+              )}
+            </Pressable>
+
+            <Pressable
+              onPress={handleFacebookSignIn}
+              style={[styles.socialButton, { backgroundColor: theme.backgroundSecondary }]}
+              disabled={isFacebookLoading}
+              testID="button-facebook-signin"
+            >
+              {isFacebookLoading ? (
+                <ActivityIndicator color={theme.text} size="small" />
+              ) : (
+                <>
+                  <Feather name="facebook" size={20} color="#1877F2" />
+                  <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.sm }}>
+                    Facebook
+                  </ThemedText>
+                </>
+              )}
+            </Pressable>
+          </View>
 
           <View style={styles.signUpContainer}>
             <ThemedText type="small" style={{ color: theme.textSecondary }}>
@@ -225,6 +317,27 @@ const styles = StyleSheet.create({
   },
   forgotButton: {
     alignSelf: "flex-start",
+  },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: Spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  socialButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  socialButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.sm,
   },
   signUpContainer: {
     flexDirection: "row",
