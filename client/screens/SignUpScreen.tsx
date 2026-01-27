@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, ActivityIndicator, TextInput, ScrollView } from "react-native";
+import { View, StyleSheet, Pressable, ActivityIndicator, TextInput, ScrollView, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -111,6 +111,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
         ]}
       >
         <View style={styles.headerSection}>
+          <Image
+            source={require("../../assets/images/app-logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <ThemedText type="h1" style={styles.title}>
             Create Account
           </ThemedText>
@@ -277,6 +282,11 @@ const styles = StyleSheet.create({
   headerSection: {
     alignItems: "center",
     marginBottom: Spacing["2xl"],
+  },
+  logo: {
+    width: 100,
+    height: 80,
+    marginBottom: Spacing.md,
   },
   title: {
     color: "#C4B5FD",

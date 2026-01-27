@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, ActivityIndicator, TextInput } from "react-native";
+import { View, StyleSheet, Pressable, ActivityIndicator, TextInput, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -141,6 +141,11 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
         ]}
       >
         <View style={styles.headerSection}>
+          <Image
+            source={require("../../assets/images/app-logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <ThemedText type="h1" style={styles.title}>
             Real Dream
           </ThemedText>
@@ -317,6 +322,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: Spacing["3xl"],
     marginBottom: Spacing["3xl"],
+  },
+  logo: {
+    width: 120,
+    height: 100,
+    marginBottom: Spacing.lg,
   },
   title: {
     color: "#C4B5FD",
