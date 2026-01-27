@@ -2,9 +2,13 @@ import { View, StyleSheet, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Haptics from "expo-haptics";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 interface AdBannerProps {
   variant?: "default" | "compact";
@@ -12,6 +16,12 @@ interface AdBannerProps {
 
 export function AdBanner({ variant = "default" }: AdBannerProps) {
   const isCompact = variant === "compact";
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("Subscription");
+  };
 
   return (
     <Animated.View 
@@ -38,7 +48,7 @@ export function AdBanner({ variant = "default" }: AdBannerProps) {
               </ThemedText>
             )}
           </View>
-          <Pressable style={styles.ctaButton}>
+          <Pressable style={styles.ctaButton} onPress={handlePress}>
             <Feather name="arrow-right" size={16} color="#FFFFFF" />
           </Pressable>
         </View>
