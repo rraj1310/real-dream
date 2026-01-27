@@ -1,0 +1,230 @@
+Project Overview
+
+Build a full-stack mobile application called “Real Dream” for Android and iOS based strictly on the attached screenshots and user-flow diagrams.
+
+This is NOT a demo and NOT a static UI.
+It must be a real, multi-user app with a proper backend and authentication.
+
+🔹 Platform & Tech Stack (MANDATORY)
+
+Frontend (Mobile):
+
+Flutter (preferred) OR React Native (Expo)
+
+Responsive mobile-first UI
+
+Pixel-perfect UI based on provided screenshots
+
+Backend:
+
+Node.js + Express
+
+REST APIs (no mock APIs)
+
+Database:
+
+PostgreSQL or MongoDB
+
+Proper relational / document schema
+
+Authentication:
+
+Email + Password
+
+Google Login
+
+Facebook Login
+
+Hosting-ready
+
+Backend must be deployable independently
+
+No hardcoded users, tokens, or credentials
+
+🔹 Core Rules (VERY IMPORTANT)
+
+❌ NO hardcoded data
+
+❌ NO fake login
+
+❌ NO single-user logic
+
+❌ NO static JSON pretending to be backend
+
+✅ Every user must have separate data
+
+✅ Sessions must persist after login
+
+✅ App must work for multiple users simultaneously
+
+🔹 App Modules to Implement
+1️⃣ Authentication
+
+Email & Password Sign Up / Login
+
+Forgot Password
+
+Google OAuth
+
+Facebook OAuth
+
+Secure token-based authentication (JWT)
+
+Persistent login (auto-login on reopen)
+
+2️⃣ Home Dashboard
+
+Based on screenshots:
+
+RealDream Champions
+
+My RealDream
+
+RealDream Market
+
+RealDream News
+
+RealDream Social
+
+Gallery
+
+Each tile navigates to its own screen.
+
+3️⃣ User Profile
+
+Personal Profile
+
+Vendor Profile
+
+Edit Profile
+
+Delete Account
+
+Profile photo upload
+
+User achievements
+
+4️⃣ My RealDream
+
+Personal RealDream
+
+Group RealDream
+
+RealDream Challenge
+
+Start New RealDream
+
+Timeline & progress tracking
+
+Privacy controls (Public / Connections)
+
+5️⃣ Social Features
+
+Followers / Following
+
+Connections list
+
+User profiles
+
+Feed (like, comment, view count)
+
+Gallery uploads
+
+6️⃣ Messaging & Notifications
+
+Real-time messages (Socket or polling)
+
+Notifications list
+
+Read/unread status
+
+Timestamped messages
+
+7️⃣ Wallet & Gamification
+
+Coin Wallet
+
+Lucky Wheel
+
+Rewards
+
+Transaction history
+
+Secure balance handling
+
+8️⃣ Subscription System
+
+Bronze
+
+Silver
+
+Gold
+
+Platinum
+
+Backend-controlled access rules
+
+🔹 UI / Theme Requirements
+
+Use the exact color theme from provided screenshots:
+
+Gradient backgrounds
+
+Purple / Pink / Blue theme
+
+Rounded cards
+
+Bottom advertisements section
+
+Fonts must match modern mobile UI (Inter / Poppins)
+
+Consistent spacing and icons
+
+All screens must be scroll-safe on small devices
+
+🔹 Navigation
+
+Stack + Tab navigation
+
+Back button support
+
+Deep linking ready
+
+No dead screens
+
+🔹 Backend Requirements
+
+REST APIs for all features
+
+Secure password hashing
+
+Role-based access
+
+Database migrations
+
+Environment-based configs
+
+Proper error handling
+
+🔹 Deliverables
+
+Fully working Android app
+
+Fully working iOS app
+
+Backend server code
+
+Database schema
+
+API documentation
+
+Clear setup instructions
+
+No demo limitations
+
+🔹 Final Instruction
+
+Follow the screenshots and flow diagrams exactly.
+If something is unclear, make a reasonable production-grade assumption instead of skipping it.
+
+This app must be pitch-ready, investor-ready, and scalable.
