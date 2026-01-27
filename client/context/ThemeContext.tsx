@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useColorScheme } from "react-native";
 
 import { themes, ThemeType, ThemeColors } from "@/constants/theme";
 
@@ -19,10 +18,12 @@ const THEME_STORAGE_KEY = "@real_dream_theme";
 const PURCHASED_THEMES_KEY = "@real_dream_purchased_themes";
 const USER_COINS_KEY = "@real_dream_user_coins";
 
+const defaultTheme = themes.find((t) => t.id === "galaxy") || themes[0];
+
 export const ThemeContext = createContext<ThemeContextType>({
-  currentTheme: themes[0],
-  theme: themes[0].colors,
-  isDark: false,
+  currentTheme: defaultTheme,
+  theme: defaultTheme.colors,
+  isDark: true,
   setThemeById: () => {},
   purchasedThemes: [],
   purchaseTheme: () => {},
@@ -35,11 +36,9 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const colorScheme = useColorScheme();
-  const [currentThemeId, setCurrentThemeId] = useState<string>(
-    colorScheme === "dark" ? "dark" : "light"
-  );
+  const [currentThemeId, setCurrentThemeId] = useState<string>("galaxy");
   const [purchasedThemes, setPurchasedThemes] = useState<string[]>([
+    "galaxy",
     "light",
     "dark",
   ]);
@@ -63,7 +62,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
       if (storedPurchased) {
         const parsed = JSON.parse(storedPurchased);
-        setPurchasedThemes(["light", "dark", ...parsed]);
+        setPurchasedThemes(["galaxy", "light", "dark", ...parsed]);
       }
 
       if (storedCoins) {
@@ -109,7 +108,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         AsyncStorage.setItem(USER_COINS_KEY, newCoins.toString()),
         AsyncStorage.setItem(
           PURCHASED_THEMES_KEY,
-          JSON.stringify(newPurchased.filter((t) => t !== "light" && t !== "dark"))
+          JSON.stringify(newPurchased.filter((t) => !["galaxy", "light", "dark"].includes(t)))
         ),
       ]);
     } catch (error) {
@@ -126,9 +125,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  const currentTheme = themes.find((t) => t.id === currentThemeId) || themes[0];
+  const currentTheme = themes.find((t) => t.id === currentThemeId) || defaultTheme;
   const isDark =
-    currentThemeId === "dark" || currentThemeId === "midnight";
+    currentThemeId === "galaxy" || currentThemeId === "dark" || currentThemeId === "midnight";
 
   return (
     <ThemeContext.Provider

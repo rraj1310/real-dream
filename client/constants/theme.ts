@@ -35,6 +35,37 @@ export type ThemeColors = {
   accent: string;
   accentLight: string;
   gradient: [string, string];
+  inputBackground: string;
+};
+
+const galaxyTheme: ThemeColors = {
+  text: "#FFFFFF",
+  textSecondary: "#C4B5FD",
+  textMuted: "#8B7FC7",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#8B7FC7",
+  tabIconSelected: "#A78BFA",
+  link: "#C4B5FD",
+  backgroundRoot: "#0D0B1E",
+  backgroundDefault: "#1A1533",
+  backgroundSecondary: "#2D2752",
+  backgroundTertiary: "#3D3666",
+  border: "#3D3666",
+  borderLight: "#2D2752",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#60A5FA",
+  purple: "#A78BFA",
+  yellow: "#FBBF24",
+  green: "#4ADE80",
+  pink: "#F472B6",
+  orange: "#FB923C",
+  indigo: "#818CF8",
+  accent: "#A78BFA",
+  accentLight: "#4C1D95",
+  gradient: ["#7C3AED", "#EC4899"],
+  inputBackground: "#2D2752",
 };
 
 const lightTheme: ThemeColors = {
@@ -64,6 +95,7 @@ const lightTheme: ThemeColors = {
   accent: "#3B82F6",
   accentLight: "#DBEAFE",
   gradient: ["#3B82F6", "#8B5CF6"],
+  inputBackground: "#F3F4F6",
 };
 
 const darkTheme: ThemeColors = {
@@ -93,6 +125,7 @@ const darkTheme: ThemeColors = {
   accent: "#60A5FA",
   accentLight: "#1E3A5F",
   gradient: ["#3B82F6", "#8B5CF6"],
+  inputBackground: "#334155",
 };
 
 const oceanTheme: ThemeColors = {
@@ -122,6 +155,7 @@ const oceanTheme: ThemeColors = {
   accent: "#0284C7",
   accentLight: "#BAE6FD",
   gradient: ["#0EA5E9", "#06B6D4"],
+  inputBackground: "#BAE6FD",
 };
 
 const sunsetTheme: ThemeColors = {
@@ -151,6 +185,7 @@ const sunsetTheme: ThemeColors = {
   accent: "#EA580C",
   accentLight: "#FED7AA",
   gradient: ["#F97316", "#EF4444"],
+  inputBackground: "#FED7AA",
 };
 
 const forestTheme: ThemeColors = {
@@ -180,6 +215,7 @@ const forestTheme: ThemeColors = {
   accent: "#16A34A",
   accentLight: "#BBF7D0",
   gradient: ["#22C55E", "#14B8A6"],
+  inputBackground: "#BBF7D0",
 };
 
 const lavenderTheme: ThemeColors = {
@@ -209,6 +245,7 @@ const lavenderTheme: ThemeColors = {
   accent: "#7C3AED",
   accentLight: "#DDD6FE",
   gradient: ["#8B5CF6", "#EC4899"],
+  inputBackground: "#DDD6FE",
 };
 
 const roseTheme: ThemeColors = {
@@ -238,6 +275,7 @@ const roseTheme: ThemeColors = {
   accent: "#DB2777",
   accentLight: "#FECDD3",
   gradient: ["#EC4899", "#F43F5E"],
+  inputBackground: "#FECDD3",
 };
 
 const midnightTheme: ThemeColors = {
@@ -267,9 +305,11 @@ const midnightTheme: ThemeColors = {
   accent: "#818CF8",
   accentLight: "#312E81",
   gradient: ["#6366F1", "#8B5CF6"],
+  inputBackground: "#1E293B",
 };
 
 export const themes: ThemeType[] = [
+  { id: "galaxy", name: "Galaxy", isPremium: false, colors: galaxyTheme },
   { id: "light", name: "Light", isPremium: false, colors: lightTheme },
   { id: "dark", name: "Dark", isPremium: false, colors: darkTheme },
   { id: "ocean", name: "Ocean", isPremium: true, price: 99, colors: oceanTheme },
@@ -283,6 +323,7 @@ export const themes: ThemeType[] = [
 export const Colors = {
   light: lightTheme,
   dark: darkTheme,
+  galaxy: galaxyTheme,
 };
 
 export const Spacing = {

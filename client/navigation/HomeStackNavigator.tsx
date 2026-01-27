@@ -7,7 +7,10 @@ import WallOfFameScreen from "@/screens/WallOfFameScreen";
 import MarketScreen from "@/screens/MarketScreen";
 import GalleryScreen from "@/screens/GalleryScreen";
 import NewsFeedScreen from "@/screens/NewsFeedScreen";
-import { HeaderTitle } from "@/components/HeaderTitle";
+import MessagesScreen from "@/screens/MessagesScreen";
+import NotificationsScreen from "@/screens/NotificationsScreen";
+import LuckySpinScreen from "@/screens/LuckySpinScreen";
+import { HeaderTitle, HeaderIcons } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 
 export type HomeStackParamList = {
@@ -17,6 +20,9 @@ export type HomeStackParamList = {
   Market: undefined;
   Gallery: undefined;
   NewsFeed: undefined;
+  Messages: undefined;
+  Notifications: undefined;
+  LuckySpin: undefined;
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -31,6 +37,7 @@ export default function HomeStackNavigator() {
         component={MainMenuScreen}
         options={{
           headerTitle: () => <HeaderTitle title="Real Dream" />,
+          headerRight: () => <HeaderIcons />,
         }}
       />
       <Stack.Screen
@@ -66,6 +73,27 @@ export default function HomeStackNavigator() {
         component={NewsFeedScreen}
         options={{
           headerTitle: "NEWS FEED",
+        }}
+      />
+      <Stack.Screen
+        name="Messages"
+        component={MessagesScreen}
+        options={{
+          headerTitle: "MESSAGES",
+        }}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          headerTitle: "NOTIFICATIONS",
+        }}
+      />
+      <Stack.Screen
+        name="LuckySpin"
+        component={LuckySpinScreen}
+        options={{
+          headerTitle: "LUCKY SPIN",
         }}
       />
     </Stack.Navigator>
