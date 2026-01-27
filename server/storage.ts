@@ -4,6 +4,7 @@ import {
   users,
   dreams,
   dreamMembers,
+  dreamTasks,
   connections,
   messages,
   notifications,
@@ -18,6 +19,7 @@ import {
   conversations,
   type User,
   type Dream,
+  type DreamTask,
   type Message,
   type Notification,
   type Transaction,
@@ -490,6 +492,71 @@ class DatabaseStorage implements IStorage {
 
   async removeDreamMember(dreamId: string, userId: string): Promise<void> {
     await db.delete(dreamMembers).where(and(eq(dreamMembers.dreamId, dreamId), eq(dreamMembers.userId, userId)));
+  }
+
+  async getDreamTasks(dreamId: string): Promise<DreamTask[]> {
+    return db.select().from(dreamTasks).where(eq(dreamTasks.dreamId, dreamId)).orderBy(dreamTasks.order, dreamTasks.dueDate);
+  }
+
+  async getDreamTask(id: string): Promise<DreamTask | undefined> {
+    const [task] = await db.select().from(dreamTasks).where(eq(dreamTasks.id, id));
+    return task;
+  }
+
+  async createDreamTask(taskData: Partial<DreamTask>): Promise<DreamTask> {
+    const [task] = await db.insert(dreamTasks).values(taskData as any).returning();
+    return task;
+  }
+
+  async updateDreamTask(id: string, data: Partial<DreamTask>): Promise<DreamTask | undefined> {
+    const [task] = await db
+      .update(dreamTasks)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(dreamTasks.id, id))
+      .returning();
+    return task;
+  }
+
+  async deleteDreamTask(id: string): Promise<boolean> {
+    await db.delete(dreamTasks).where(eq(dreamTasks.id, id));
+    return true;
+  }
+
+  async toggleDreamTaskComplete(id: string): Promise<DreamTask | undefined> {
+    const task = await this.getDreamTask(id);
+    if (!task) return undefined;
+    
+    const isCompleted = !task.isCompleted;
+    const [updated] = await db
+      .update(dreamTasks)
+      .set({ 
+        isCompleted, 
+        completedAt: isCompleted ? new Date() : null,
+        updatedAt: new Date() 
+      })
+      .where(eq(dreamTasks.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async calculateDreamProgress(dreamId: string): Promise<number> {
+    const tasks = await this.getDreamTasks(dreamId);
+    if (tasks.length === 0) return 0;
+    
+    const completedTasks = tasks.filter(t => t.isCompleted).length;
+    return Math.round((completedTasks / tasks.length) * 100);
+  }
+
+  async updateDreamProgress(dreamId: string): Promise<Dream | undefined> {
+    const progress = await this.calculateDreamProgress(dreamId);
+    const isCompleted = progress === 100;
+    
+    return this.updateDream(dreamId, {
+      progress,
+      isCompleted,
+      completedAt: isCompleted ? new Date() : null,
+    });
   }
 }
 

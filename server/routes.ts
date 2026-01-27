@@ -385,6 +385,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/dreams/:dreamId/tasks", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const dreamId = req.params.dreamId as string;
+      const tasks = await storage.getDreamTasks(dreamId);
+      res.json(tasks);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get tasks" });
+    }
+  });
+
+  app.post("/api/dreams/:dreamId/tasks", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const dreamId = req.params.dreamId as string;
+      const { title, description, dueDate, reminderDate, order } = req.body;
+      const task = await storage.createDreamTask({
+        dreamId,
+        title,
+        description,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        reminderDate: reminderDate ? new Date(reminderDate) : undefined,
+        order: order || 0,
+      });
+      
+      await storage.updateDreamProgress(dreamId);
+      
+      if (reminderDate) {
+        await storage.createNotification({
+          userId: req.user!.id,
+          title: "Task Reminder",
+          description: `Reminder for "${title}"`,
+          type: "system",
+        });
+      }
+      
+      res.status(201).json(task);
+    } catch (error) {
+      console.error("Create task error:", error);
+      res.status(500).json({ error: "Failed to create task" });
+    }
+  });
+
+  app.put("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const { dreamId, taskId } = req.params;
+      const { title, description, dueDate, reminderDate, order } = req.body;
+      const task = await storage.updateDreamTask(taskId, {
+        title,
+        description,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        reminderDate: reminderDate ? new Date(reminderDate) : undefined,
+        order,
+      });
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update task" });
+    }
+  });
+
+  app.delete("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const { dreamId, taskId } = req.params;
+      await storage.deleteDreamTask(taskId);
+      await storage.updateDreamProgress(dreamId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete task" });
+    }
+  });
+
+  app.post("/api/dreams/:dreamId/tasks/:taskId/toggle", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const { dreamId, taskId } = req.params;
+      const task = await storage.toggleDreamTaskComplete(taskId);
+      
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      
+      const dream = await storage.updateDreamProgress(dreamId);
+      
+      if (task.isCompleted) {
+        const user = await storage.getUser(req.user!.id);
+        if (user) {
+          await storage.updateUser(user.id, {
+            totalPoints: (user.totalPoints || 0) + 10,
+          });
+          await storage.createNotification({
+            userId: req.user!.id,
+            title: "Task Completed!",
+            description: `You earned 10 points for completing "${task.title}"`,
+            type: "achievement",
+          });
+        }
+      }
+      
+      res.json({ task, dream });
+    } catch (error) {
+      console.error("Toggle task error:", error);
+      res.status(500).json({ error: "Failed to toggle task" });
+    }
+  });
+
   app.get("/api/connections", authMiddleware, async (req: AuthRequest, res) => {
     try {
       const connections = await storage.getConnections(req.user!.id);
