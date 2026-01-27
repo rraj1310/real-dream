@@ -142,7 +142,7 @@ export default function SubscriptionScreen() {
       >
         <Animated.View entering={FadeInDown.springify()}>
           <ThemedText type="h2" style={styles.title}>Choose Your Plan</ThemedText>
-          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
+          <ThemedText type="body" style={[styles.subtitle, { color: "#C4B5FD" }]}>
             Unlock premium features and achieve your dreams faster
           </ThemedText>
         </Animated.View>
@@ -185,7 +185,7 @@ export default function SubscriptionScreen() {
                       <ThemedText type="h2" style={{ color: theme.link }}>
                         ${pkg.price.toFixed(2)}
                       </ThemedText>
-                      <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                      <ThemedText type="body" style={{ color: "#C4B5FD" }}>
                         {pkg.period}
                       </ThemedText>
                     </View>
@@ -201,7 +201,7 @@ export default function SubscriptionScreen() {
                   {pkg.features.map((feature, fIndex) => (
                     <View key={fIndex} style={styles.featureRow}>
                       <Feather name="check" size={18} color={theme.green} />
-                      <ThemedText type="body" style={{ color: theme.text, flex: 1 }}>
+                      <ThemedText type="body" style={{ color: "#FFFFFF", flex: 1 }}>
                         {feature}
                       </ThemedText>
                     </View>
@@ -251,7 +251,7 @@ export default function SubscriptionScreen() {
                 <ThemedText type="h3" style={styles.confirmTitle}>
                   Confirm Subscription
                 </ThemedText>
-                <ThemedText type="body" style={[styles.confirmText, { color: theme.textSecondary }]}>
+                <ThemedText type="body" style={[styles.confirmText, { color: "#C4B5FD" }]}>
                   Subscribe to {confirmPackage.name} for ${confirmPackage.price.toFixed(2)}/month?
                 </ThemedText>
 

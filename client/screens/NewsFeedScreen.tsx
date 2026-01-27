@@ -189,7 +189,7 @@ export default function NewsFeedScreen() {
           <ThemedText type="h3" style={styles.title}>
             Community Feed
           </ThemedText>
-          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
+          <ThemedText type="body" style={[styles.subtitle, { color: "#C4B5FD" }]}>
             See what others are achieving
           </ThemedText>
         </Animated.View>
@@ -220,7 +220,7 @@ export default function NewsFeedScreen() {
                     <ThemedText type="body" style={styles.userName}>
                       {post.user?.fullName || post.user?.username || "Anonymous"}
                     </ThemedText>
-                    <ThemedText type="xs" style={{ color: theme.textMuted }}>
+                    <ThemedText type="xs" style={{ color: "#8B7FC7" }}>
                       {formatTimeAgo(post.createdAt)}
                     </ThemedText>
                   </View>
@@ -233,7 +233,7 @@ export default function NewsFeedScreen() {
                 {post.dream ? (
                   <View style={[styles.achievementBadge, { backgroundColor: theme.backgroundSecondary }]}>
                     <Feather name="award" size={14} color={theme.yellow} />
-                    <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.xs }}>
+                    <ThemedText type="small" style={{ color: "#FFFFFF", marginLeft: Spacing.xs }}>
                       {post.dream.title}
                     </ThemedText>
                   </View>
@@ -247,20 +247,20 @@ export default function NewsFeedScreen() {
                     <Feather 
                       name={likedPosts.has(post.id) ? "heart" : "heart"} 
                       size={18} 
-                      color={likedPosts.has(post.id) ? theme.error : theme.textSecondary} 
+                      color={likedPosts.has(post.id) ? theme.error : "#C4B5FD"} 
                     />
-                    <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+                    <ThemedText type="small" style={{ color: "#C4B5FD", marginLeft: Spacing.xs }}>
                       {post.likes}
                     </ThemedText>
                   </Pressable>
                   <Pressable style={styles.actionButton}>
-                    <Feather name="message-circle" size={18} color={theme.textSecondary} />
-                    <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+                    <Feather name="message-circle" size={18} color="#C4B5FD" />
+                    <ThemedText type="small" style={{ color: "#C4B5FD", marginLeft: Spacing.xs }}>
                       {post.comments}
                     </ThemedText>
                   </Pressable>
                   <Pressable style={styles.actionButton}>
-                    <Feather name="share" size={18} color={theme.textSecondary} />
+                    <Feather name="share" size={18} color="#C4B5FD" />
                   </Pressable>
                 </View>
               </Card>
@@ -286,7 +286,7 @@ export default function NewsFeedScreen() {
                     <ThemedText type="body" style={styles.userName}>
                       {post.user}
                     </ThemedText>
-                    <ThemedText type="xs" style={{ color: theme.textMuted }}>
+                    <ThemedText type="xs" style={{ color: "#8B7FC7" }}>
                       {post.time}
                     </ThemedText>
                   </View>
@@ -299,7 +299,7 @@ export default function NewsFeedScreen() {
                 {post.achievement ? (
                   <View style={[styles.achievementBadge, { backgroundColor: theme.backgroundSecondary }]}>
                     <Feather name="award" size={14} color={theme.yellow} />
-                    <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.xs }}>
+                    <ThemedText type="small" style={{ color: "#FFFFFF", marginLeft: Spacing.xs }}>
                       {post.achievement}
                     </ThemedText>
                   </View>
@@ -307,19 +307,19 @@ export default function NewsFeedScreen() {
 
                 <View style={[styles.postActions, { borderTopColor: "rgba(139, 127, 199, 0.3)" }]}>
                   <Pressable style={styles.actionButton}>
-                    <Feather name="heart" size={18} color={theme.textSecondary} />
-                    <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+                    <Feather name="heart" size={18} color="#C4B5FD" />
+                    <ThemedText type="small" style={{ color: "#C4B5FD", marginLeft: Spacing.xs }}>
                       {post.likes}
                     </ThemedText>
                   </Pressable>
                   <Pressable style={styles.actionButton}>
-                    <Feather name="message-circle" size={18} color={theme.textSecondary} />
-                    <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
+                    <Feather name="message-circle" size={18} color="#C4B5FD" />
+                    <ThemedText type="small" style={{ color: "#C4B5FD", marginLeft: Spacing.xs }}>
                       {post.comments}
                     </ThemedText>
                   </Pressable>
                   <Pressable style={styles.actionButton}>
-                    <Feather name="share" size={18} color={theme.textSecondary} />
+                    <Feather name="share" size={18} color="#C4B5FD" />
                   </Pressable>
                 </View>
               </Card>

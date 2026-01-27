@@ -164,7 +164,7 @@ export default function ThemeScreen() {
               <Feather name="dollar-sign" size={24} color={theme.yellow} />
             </View>
             <View>
-              <ThemedText type="small" style={{ color: theme.textSecondary }}>
+              <ThemedText type="small" style={{ color: "#C4B5FD" }}>
                 Your Balance
               </ThemedText>
               <ThemedText type="h3">{userCoins.toLocaleString()} coins</ThemedText>
@@ -197,7 +197,7 @@ export default function ThemeScreen() {
           </ThemedText>
           <ThemedText
             type="small"
-            style={[styles.sectionSubtitle, { color: theme.textSecondary }]}
+            style={[styles.sectionSubtitle, { color: "#C4B5FD" }]}
           >
             Unlock beautiful themes with your coins
           </ThemedText>
@@ -243,7 +243,7 @@ export default function ThemeScreen() {
 
                 <ThemedText
                   type="body"
-                  style={[styles.modalPrice, { color: theme.textSecondary }]}
+                  style={[styles.modalPrice, { color: "#C4B5FD" }]}
                 >
                   Price: {selectedPurchaseTheme.price} coins
                 </ThemedText>

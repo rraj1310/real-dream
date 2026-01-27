@@ -109,7 +109,7 @@ export default function WalletScreen() {
             <View style={styles.balanceHeader}>
               <ThemedText
                 type="body"
-                style={{ color: theme.textSecondary }}
+                style={{ color: "#C4B5FD" }}
               >
                 Total Balance
               </ThemedText>
@@ -118,7 +118,7 @@ export default function WalletScreen() {
               </ThemedText>
               <ThemedText
                 type="body"
-                style={{ color: theme.textSecondary }}
+                style={{ color: "#C4B5FD" }}
               >
                 Coins
               </ThemedText>
@@ -136,8 +136,8 @@ export default function WalletScreen() {
                 onPress={() => handleAction("send")}
                 style={[styles.actionButton, styles.actionButtonOutline]}
               >
-                <Feather name="send" size={18} color={theme.text} />
-                <ThemedText style={[styles.actionText, { color: theme.text }]}>
+                <Feather name="send" size={18} color="#FFFFFF" />
+                <ThemedText style={[styles.actionText, { color: "#FFFFFF" }]}>
                   Send
                 </ThemedText>
               </Pressable>
@@ -145,8 +145,8 @@ export default function WalletScreen() {
                 onPress={() => handleAction("withdraw")}
                 style={[styles.actionButton, styles.actionButtonOutline]}
               >
-                <Feather name="trending-up" size={18} color={theme.text} />
-                <ThemedText style={[styles.actionText, { color: theme.text }]}>
+                <Feather name="trending-up" size={18} color="#FFFFFF" />
+                <ThemedText style={[styles.actionText, { color: "#FFFFFF" }]}>
                   Withdraw
                 </ThemedText>
               </Pressable>
@@ -170,7 +170,7 @@ export default function WalletScreen() {
               <Feather
                 name="dollar-sign"
                 size={16}
-                color={activeTab === "coins" ? "#FFFFFF" : theme.textSecondary}
+                color={activeTab === "coins" ? "#FFFFFF" : "#C4B5FD"}
               />
               <ThemedText
                 type="small"
@@ -178,7 +178,7 @@ export default function WalletScreen() {
                   styles.tabText,
                   activeTab === "coins"
                     ? styles.tabTextActive
-                    : { color: theme.textSecondary },
+                    : { color: "#C4B5FD" },
                 ]}
               >
                 Coins
@@ -194,7 +194,7 @@ export default function WalletScreen() {
               <Feather
                 name="award"
                 size={16}
-                color={activeTab === "awards" ? "#FFFFFF" : theme.textSecondary}
+                color={activeTab === "awards" ? "#FFFFFF" : "#C4B5FD"}
               />
               <ThemedText
                 type="small"
@@ -202,7 +202,7 @@ export default function WalletScreen() {
                   styles.tabText,
                   activeTab === "awards"
                     ? styles.tabTextActive
-                    : { color: theme.textSecondary },
+                    : { color: "#C4B5FD" },
                 ]}
               >
                 Awards
@@ -220,8 +220,8 @@ export default function WalletScreen() {
               <ActivityIndicator size="large" color="#A78BFA" />
             ) : transactions.length === 0 ? (
               <Card style={styles.emptyCard}>
-                <Feather name="inbox" size={40} color={theme.textMuted} />
-                <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+                <Feather name="inbox" size={40} color="#8B7FC7" />
+                <ThemedText type="body" style={{ color: "#C4B5FD", marginTop: Spacing.md }}>
                   No transactions yet
                 </ThemedText>
               </Card>
@@ -259,7 +259,7 @@ export default function WalletScreen() {
                         </ThemedText>
                         <ThemedText
                           type="small"
-                          style={{ color: theme.textSecondary }}
+                          style={{ color: "#C4B5FD" }}
                         >
                           {formatDate(transaction.createdAt)}
                         </ThemedText>
@@ -302,7 +302,7 @@ export default function WalletScreen() {
                   </ThemedText>
                   <ThemedText
                     type="xs"
-                    style={{ color: theme.textSecondary }}
+                    style={{ color: "#C4B5FD" }}
                   >
                     {award.earned}
                   </ThemedText>
