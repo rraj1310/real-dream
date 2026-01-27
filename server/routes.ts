@@ -124,6 +124,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/subscription", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const { tier } = req.body;
+      const validTiers = ["bronze", "silver", "gold", "platinum"];
+      
+      if (!tier || !validTiers.includes(tier)) {
+        return res.status(400).json({ error: "Invalid subscription tier" });
+      }
+
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+      const user = await storage.updateUser(req.user!.id, {
+        subscriptionTier: tier,
+        subscriptionExpiresAt: expiresAt,
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      await storage.createTransaction({
+        userId: req.user!.id,
+        amount: tier === "bronze" ? -499 : tier === "silver" ? -999 : tier === "gold" ? -1999 : -2999,
+        type: "subscription",
+        description: `Subscribed to ${tier.toUpperCase()} plan`,
+      });
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to subscribe" });
+    }
+  });
+
   app.delete("/api/profile", authMiddleware, async (req: AuthRequest, res) => {
     try {
       await storage.deleteUser(req.user!.id);

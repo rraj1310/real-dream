@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
 type MenuItem = {
@@ -32,11 +33,14 @@ export default function SettingsScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
   const { theme } = useTheme();
+  const { user } = useAuth();
 
   const handleNavigate = (route: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (route === "Profile") {
       navigation.navigate("ProfileTab");
+    } else if (route === "Subscription") {
+      navigation.navigate("Subscription");
     }
   };
 
@@ -66,7 +70,7 @@ export default function SettingsScreen() {
                   User Name
                 </ThemedText>
                 <ThemedText type="body" style={styles.userInfoValue}>
-                  john_doe
+                  {user?.username || "Not set"}
                 </ThemedText>
               </View>
             </View>
@@ -80,7 +84,7 @@ export default function SettingsScreen() {
                   Full Name
                 </ThemedText>
                 <ThemedText type="body" style={styles.userInfoValue}>
-                  John Doe
+                  {user?.fullName || "Not set"}
                 </ThemedText>
               </View>
             </View>
