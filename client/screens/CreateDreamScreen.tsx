@@ -18,12 +18,6 @@ import { getApiUrl } from "@/lib/query-client";
 
 type DreamTypeOption = "personal" | "challenge" | "group";
 
-const dreamTypes: { type: DreamTypeOption; icon: keyof typeof Feather.glyphMap; title: string; color: string }[] = [
-  { type: "personal", icon: "user", title: "Personal", color: "#3B82F6" },
-  { type: "challenge", icon: "award", title: "Challenge", color: "#EAB308" },
-  { type: "group", icon: "users", title: "Group", color: "#8B5CF6" },
-];
-
 export default function CreateDreamScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
@@ -104,42 +98,6 @@ export default function CreateDreamScreen() {
 
         <Animated.View entering={FadeInDown.delay(100).springify()}>
           <ThemedText type="small" style={styles.label}>
-            DREAM TYPE
-          </ThemedText>
-          <View style={styles.typeContainer}>
-            {dreamTypes.map((dt) => (
-              <Pressable
-                key={dt.type}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSelectedType(dt.type);
-                }}
-                style={[
-                  styles.typeButton,
-                  { backgroundColor: selectedType === dt.type ? dt.color : "rgba(45, 39, 82, 0.6)" },
-                ]}
-              >
-                <Feather
-                  name={dt.icon}
-                  size={20}
-                  color={selectedType === dt.type ? "#FFFFFF" : "#C4B5FD"}
-                />
-                <ThemedText
-                  type="small"
-                  style={{
-                    color: selectedType === dt.type ? "#FFFFFF" : "#C4B5FD",
-                    fontWeight: selectedType === dt.type ? "600" : "400",
-                  }}
-                >
-                  {dt.title}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(200).springify()}>
-          <ThemedText type="small" style={styles.label}>
             DREAM TITLE
           </ThemedText>
           <TextInput
@@ -152,7 +110,7 @@ export default function CreateDreamScreen() {
           />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(300).springify()}>
+        <Animated.View entering={FadeInDown.delay(200).springify()}>
           <ThemedText type="small" style={styles.label}>
             DESCRIPTION (OPTIONAL)
           </ThemedText>
@@ -172,7 +130,7 @@ export default function CreateDreamScreen() {
           <ThemedText type="small" style={styles.errorText}>{error}</ThemedText>
         ) : null}
 
-        <Animated.View entering={FadeInDown.delay(400).springify()}>
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
           <Button
             onPress={handleCreate}
             disabled={isLoading}
@@ -216,19 +174,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: Spacing.sm,
     color: "#C4B5FD",
-  },
-  typeContainer: {
-    flexDirection: "row",
-    gap: Spacing.sm,
-  },
-  typeButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: Spacing.xs,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.sm,
   },
   input: {
     borderRadius: BorderRadius.sm,
