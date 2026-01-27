@@ -36,15 +36,6 @@ type GalleryPost = {
   } | null;
 };
 
-const defaultGalleryItems = [
-  { id: "1", title: "Dream Achieved", category: "Fitness", likes: 234, gradient: ["#3B82F6", "#8B5CF6"] as [string, string] },
-  { id: "2", title: "First Marathon", category: "Sports", likes: 189, gradient: ["#22C55E", "#10B981"] as [string, string] },
-  { id: "3", title: "Career Milestone", category: "Career", likes: 312, gradient: ["#EAB308", "#F59E0B"] as [string, string] },
-  { id: "4", title: "New Home", category: "Lifestyle", likes: 156, gradient: ["#EC4899", "#F472B6"] as [string, string] },
-  { id: "5", title: "Graduation Day", category: "Education", likes: 278, gradient: ["#6366F1", "#818CF8"] as [string, string] },
-  { id: "6", title: "Travel Goals", category: "Travel", likes: 421, gradient: ["#F97316", "#FB923C"] as [string, string] },
-];
-
 const typeGradients: { [key: string]: [string, string] } = {
   personal: ["#3B82F6", "#8B5CF6"],
   challenge: ["#22C55E", "#10B981"],
@@ -81,7 +72,7 @@ export default function GalleryScreen() {
     fetchGalleryPosts();
   }, []);
 
-  const handleItemPress = (item: GalleryPost | typeof defaultGalleryItems[0]) => {
+  const handleItemPress = (item: GalleryPost) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
@@ -173,40 +164,15 @@ export default function GalleryScreen() {
             ))}
           </View>
         ) : (
-          <View style={styles.gallery}>
-            {defaultGalleryItems.map((item, index) => (
-              <Animated.View
-                key={item.id}
-                entering={FadeInDown.delay(index * 60).springify()}
-                style={styles.itemWrapper}
-              >
-                <Pressable
-                  onPress={() => handleItemPress(item as any)}
-                  style={styles.galleryItem}
-                >
-                  <LinearGradient
-                    colors={item.gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.itemContent}
-                  >
-                    <View style={styles.categoryBadge}>
-                      <ThemedText style={styles.categoryText}>{item.category}</ThemedText>
-                    </View>
-                    <View style={styles.itemFooter}>
-                      <ThemedText style={styles.itemTitle} numberOfLines={1}>
-                        {item.title}
-                      </ThemedText>
-                      <View style={styles.likesContainer}>
-                        <Feather name="heart" size={14} color="#FFFFFF" />
-                        <ThemedText style={styles.likesText}>{item.likes}</ThemedText>
-                      </View>
-                    </View>
-                  </LinearGradient>
-                </Pressable>
-              </Animated.View>
-            ))}
-          </View>
+          <Animated.View entering={FadeInDown.springify()} style={styles.emptyStateContainer}>
+            <Feather name="image" size={48} color={theme.textSecondary} style={{ marginBottom: Spacing.lg }} />
+            <ThemedText type="h3" style={styles.emptyStateTitle}>
+              No gallery posts yet
+            </ThemedText>
+            <ThemedText type="body" style={[styles.emptyStateDescription, { color: theme.textSecondary }]}>
+              Start sharing your dream achievements with the community
+            </ThemedText>
+          </Animated.View>
         )}
       </ScrollView>
     </GalaxyBackground>
@@ -234,6 +200,19 @@ const styles = StyleSheet.create({
     padding: Spacing["3xl"],
     alignItems: "center",
     justifyContent: "center",
+  },
+  emptyStateContainer: {
+    paddingVertical: Spacing["3xl"],
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.md,
+  },
+  emptyStateTitle: {
+    textAlign: "center",
+  },
+  emptyStateDescription: {
+    textAlign: "center",
+    maxWidth: 280,
   },
   gallery: {
     flexDirection: "row",

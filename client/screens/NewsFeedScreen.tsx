@@ -38,48 +38,6 @@ type NewsFeedPost = {
   } | null;
 };
 
-const defaultFeedPosts = [
-  {
-    id: "1",
-    user: "Sarah Johnson",
-    content: "Just completed my 100th dream goal! So grateful for this community.",
-    time: "2 hours ago",
-    likes: 156,
-    comments: 24,
-    gradient: ["#8B5CF6", "#A855F7"] as [string, string],
-    achievement: "Century Champion",
-  },
-  {
-    id: "2",
-    user: "Mike Chen",
-    content: "Started my fitness journey today. Day 1 of 365! Wish me luck!",
-    time: "5 hours ago",
-    likes: 89,
-    comments: 42,
-    gradient: ["#22C55E", "#10B981"] as [string, string],
-  },
-  {
-    id: "3",
-    user: "Emma Davis",
-    content: "Earned my first gold badge! Hard work pays off.",
-    time: "1 day ago",
-    likes: 234,
-    comments: 31,
-    gradient: ["#EAB308", "#F59E0B"] as [string, string],
-    achievement: "Gold Achiever",
-  },
-  {
-    id: "4",
-    user: "Alex Williams",
-    content: "Completed my career development goal! Got promoted to Senior Engineer!",
-    time: "2 days ago",
-    likes: 312,
-    comments: 56,
-    gradient: ["#3B82F6", "#60A5FA"] as [string, string],
-    achievement: "Career Star",
-  },
-];
-
 const typeGradients: { [key: string]: [string, string] } = {
   personal: ["#8B5CF6", "#A855F7"],
   challenge: ["#22C55E", "#10B981"],
@@ -267,64 +225,23 @@ export default function NewsFeedScreen() {
             </Animated.View>
           ))
         ) : (
-          defaultFeedPosts.map((post, index) => (
-            <Animated.View
-              key={post.id}
-              entering={FadeInDown.delay(index * 80).springify()}
-            >
-              <Card style={styles.postCard}>
-                <View style={styles.postHeader}>
-                  <LinearGradient
-                    colors={post.gradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.avatar}
-                  >
-                    <Feather name="user" size={20} color="#FFFFFF" />
-                  </LinearGradient>
-                  <View style={styles.userInfo}>
-                    <ThemedText type="body" style={styles.userName}>
-                      {post.user}
-                    </ThemedText>
-                    <ThemedText type="xs" style={{ color: theme.textMuted }}>
-                      {post.time}
-                    </ThemedText>
-                  </View>
-                </View>
-
-                <ThemedText type="body" style={styles.postContent}>
-                  {post.content}
-                </ThemedText>
-
-                {post.achievement ? (
-                  <View style={[styles.achievementBadge, { backgroundColor: theme.backgroundSecondary }]}>
-                    <Feather name="award" size={14} color={theme.yellow} />
-                    <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.xs }}>
-                      {post.achievement}
-                    </ThemedText>
-                  </View>
-                ) : null}
-
-                <View style={[styles.postActions, { borderTopColor: "rgba(139, 127, 199, 0.3)" }]}>
-                  <Pressable style={styles.actionButton}>
-                    <Feather name="heart" size={18} color={theme.textSecondary} />
-                    <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
-                      {post.likes}
-                    </ThemedText>
-                  </Pressable>
-                  <Pressable style={styles.actionButton}>
-                    <Feather name="message-circle" size={18} color={theme.textSecondary} />
-                    <ThemedText type="small" style={{ color: theme.textSecondary, marginLeft: Spacing.xs }}>
-                      {post.comments}
-                    </ThemedText>
-                  </Pressable>
-                  <Pressable style={styles.actionButton}>
-                    <Feather name="share" size={18} color={theme.textSecondary} />
-                  </Pressable>
-                </View>
-              </Card>
-            </Animated.View>
-          ))
+          <Animated.View
+            style={styles.emptyStateContainer}
+            entering={FadeInDown.springify()}
+          >
+            <View style={styles.emptyStateContent}>
+              <Feather name="inbox" size={48} color={theme.textSecondary} />
+              <ThemedText type="h4" style={styles.emptyStateTitle}>
+                No posts yet
+              </ThemedText>
+              <ThemedText
+                type="body"
+                style={[styles.emptyStateText, { color: theme.textSecondary }]}
+              >
+                Be the first to share your dream achievements with the community!
+              </ThemedText>
+            </View>
+          </Animated.View>
         )}
       </ScrollView>
     </GalaxyBackground>
@@ -399,5 +316,21 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  emptyStateContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing["3xl"],
+  },
+  emptyStateContent: {
+    alignItems: "center",
+    gap: Spacing.lg,
+  },
+  emptyStateTitle: {
+    marginTop: Spacing.md,
+  },
+  emptyStateText: {
+    textAlign: "center",
+    maxWidth: 280,
   },
 });

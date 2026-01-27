@@ -27,15 +27,6 @@ type MarketItem = {
   isActive: boolean;
 };
 
-const defaultItems: MarketItem[] = [
-  { id: "1", title: "Premium Badge Pack", description: "Unlock exclusive badges", category: "Badges", price: 299, imageUrl: null, userId: "", isActive: true },
-  { id: "2", title: "Custom Avatar Frame", description: "Stand out from the crowd", category: "Customization", price: 199, imageUrl: null, userId: "", isActive: true },
-  { id: "3", title: "Streak Booster", description: "Boost your streak progress", category: "Boosters", price: 149, imageUrl: null, userId: "", isActive: true },
-  { id: "4", title: "Profile Theme Pack", description: "Personalize your profile", category: "Themes", price: 399, imageUrl: null, userId: "", isActive: true },
-  { id: "5", title: "Exclusive Stickers", description: "Fun stickers for chat", category: "Stickers", price: 99, imageUrl: null, userId: "", isActive: true },
-  { id: "6", title: "XP Multiplier", description: "Double your XP gain", category: "Boosters", price: 249, imageUrl: null, userId: "", isActive: true },
-];
-
 const categoryGradients: { [key: string]: [string, string] } = {
   Badges: ["#EAB308", "#F59E0B"],
   Customization: ["#8B5CF6", "#A855F7"],
@@ -59,7 +50,7 @@ export default function MarketScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { user, token } = useAuth();
-  const [marketItems, setMarketItems] = useState<MarketItem[]>(defaultItems);
+  const [marketItems, setMarketItems] = useState<MarketItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -70,13 +61,7 @@ export default function MarketScreen() {
       const response = await fetch(new URL(`/api/market${categoryParam}`, getApiUrl()).toString());
       if (response.ok) {
         const data = await response.json();
-        if (data.length > 0) {
-          setMarketItems(data);
-        } else {
-          setMarketItems(defaultItems.filter(item => 
-            selectedCategory === "All" || item.category === selectedCategory
-          ));
-        }
+        setMarketItems(data);
       }
     } catch (error) {
       console.error("Failed to fetch market items:", error);
@@ -192,7 +177,7 @@ export default function MarketScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.link} />
           </View>
-        ) : (
+        ) : filteredItems.length > 0 ? (
           <View style={styles.itemsGrid}>
             {filteredItems.map((item, index) => (
               <Animated.View
@@ -227,6 +212,21 @@ export default function MarketScreen() {
                 </Card>
               </Animated.View>
             ))}
+          </View>
+        ) : (
+          <View style={styles.emptyStateContainer}>
+            <View style={[styles.emptyIcon, { backgroundColor: theme.accent + "20" }]}>
+              <Feather name="inbox" size={40} color={theme.accent} />
+            </View>
+            <ThemedText type="h3" style={styles.emptyTitle}>
+              No items available
+            </ThemedText>
+            <ThemedText
+              type="small"
+              style={[styles.emptyDescription, { color: theme.textSecondary }]}
+            >
+              No items available in this category
+            </ThemedText>
           </View>
         )}
       </ScrollView>
@@ -309,5 +309,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
+  },
+  emptyStateContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing["3xl"],
+    gap: Spacing.lg,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.md,
+  },
+  emptyTitle: {
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  emptyDescription: {
+    textAlign: "center",
+    maxWidth: "80%",
   },
 });
