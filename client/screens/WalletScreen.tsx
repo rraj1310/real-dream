@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useState, useEffect } from "react";
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -11,21 +11,17 @@ import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { getApiUrl } from "@/lib/query-client";
 
 type Transaction = {
-  type: "earned" | "spent";
-  amount: string;
+  id: string;
+  type: string;
+  amount: number;
   description: string;
-  date: string;
+  createdAt: string;
 };
-
-const transactions: Transaction[] = [
-  { type: "earned", amount: "+150", description: "Dream Completed", date: "Today" },
-  { type: "spent", amount: "-50", description: "Market Purchase", date: "Yesterday" },
-  { type: "earned", amount: "+200", description: "Lucky Wheel Win", date: "2 days ago" },
-  { type: "spent", amount: "-100", description: "Premium Upgrade", date: "3 days ago" },
-];
 
 type Award = {
   name: string;
@@ -34,7 +30,7 @@ type Award = {
   color: string;
 };
 
-const awards: Award[] = [
+const defaultAwards: Award[] = [
   { name: "Dream Master", icon: "award", earned: "Jan 2024", color: "#EAB308" },
   { name: "Community Hero", icon: "star", earned: "Dec 2023", color: "#8B5CF6" },
   { name: "Goal Achiever", icon: "target", earned: "Nov 2023", color: "#3B82F6" },
@@ -42,16 +38,52 @@ const awards: Award[] = [
 
 type TabType = "coins" | "awards";
 
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return date.toLocaleDateString();
+}
+
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
+  const { user, token } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("coins");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWalletData();
+  }, []);
+
+  const fetchWalletData = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(new URL('/api/wallet', getApiUrl()).toString(), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTransactions(data.transactions || []);
+      }
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const balance = {
-    coins: 2450,
-    awards: 12,
-    totalValue: "$245.00",
+    coins: user?.coins || 0,
+    awards: user?.awards || 0,
+    trophies: user?.trophies || 0,
   };
 
   const handleAction = (action: string) => {
@@ -87,7 +119,7 @@ export default function WalletScreen() {
                 type="body"
                 style={{ color: theme.textSecondary }}
               >
-                Coins = {balance.totalValue}
+                Coins
               </ThemedText>
             </View>
 
@@ -181,64 +213,70 @@ export default function WalletScreen() {
             <ThemedText type="body" style={styles.sectionTitle}>
               Recent Transactions
             </ThemedText>
-            <Card style={styles.transactionsCard}>
-              {transactions.map((transaction, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.transactionRow,
-                    index < transactions.length - 1
-                      ? styles.transactionBorder
-                      : null,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.transactionIcon,
-                      {
-                        backgroundColor:
-                          transaction.type === "earned" ? "#DCFCE7" : "#FEE2E2",
-                      },
-                    ]}
-                  >
-                    <Feather
-                      name={
-                        transaction.type === "earned"
-                          ? "arrow-down-right"
-                          : "arrow-up-right"
-                      }
-                      size={20}
-                      color={
-                        transaction.type === "earned" ? "#16A34A" : "#DC2626"
-                      }
-                    />
-                  </View>
-                  <View style={styles.transactionInfo}>
-                    <ThemedText type="body" style={styles.transactionDescription}>
-                      {transaction.description}
-                    </ThemedText>
-                    <ThemedText
-                      type="small"
-                      style={{ color: theme.textSecondary }}
+            {isLoading ? (
+              <ActivityIndicator size="large" color={theme.primary} />
+            ) : transactions.length === 0 ? (
+              <Card style={styles.emptyCard}>
+                <Feather name="inbox" size={40} color={theme.textMuted} />
+                <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+                  No transactions yet
+                </ThemedText>
+              </Card>
+            ) : (
+              <Card style={styles.transactionsCard}>
+                {transactions.map((transaction, index) => {
+                  const isPositive = transaction.amount > 0;
+                  return (
+                    <View
+                      key={transaction.id || index}
+                      style={[
+                        styles.transactionRow,
+                        index < transactions.length - 1
+                          ? styles.transactionBorder
+                          : null,
+                      ]}
                     >
-                      {transaction.date}
-                    </ThemedText>
-                  </View>
-                  <ThemedText
-                    type="body"
-                    style={[
-                      styles.transactionAmount,
-                      {
-                        color:
-                          transaction.type === "earned" ? "#16A34A" : "#DC2626",
-                      },
-                    ]}
-                  >
-                    {transaction.amount}
-                  </ThemedText>
-                </View>
-              ))}
-            </Card>
+                      <View
+                        style={[
+                          styles.transactionIcon,
+                          {
+                            backgroundColor: isPositive ? "#DCFCE7" : "#FEE2E2",
+                          },
+                        ]}
+                      >
+                        <Feather
+                          name={isPositive ? "arrow-down-right" : "arrow-up-right"}
+                          size={20}
+                          color={isPositive ? "#16A34A" : "#DC2626"}
+                        />
+                      </View>
+                      <View style={styles.transactionInfo}>
+                        <ThemedText type="body" style={styles.transactionDescription}>
+                          {transaction.description}
+                        </ThemedText>
+                        <ThemedText
+                          type="small"
+                          style={{ color: theme.textSecondary }}
+                        >
+                          {formatDate(transaction.createdAt)}
+                        </ThemedText>
+                      </View>
+                      <ThemedText
+                        type="body"
+                        style={[
+                          styles.transactionAmount,
+                          {
+                            color: isPositive ? "#16A34A" : "#DC2626",
+                          },
+                        ]}
+                      >
+                        {isPositive ? "+" : ""}{transaction.amount}
+                      </ThemedText>
+                    </View>
+                  );
+                })}
+              </Card>
+            )}
           </Animated.View>
         ) : (
           <Animated.View entering={FadeInDown.delay(200).springify()}>
@@ -246,7 +284,7 @@ export default function WalletScreen() {
               My Awards ({balance.awards})
             </ThemedText>
             <View style={styles.awardsGrid}>
-              {awards.map((award, index) => (
+              {defaultAwards.map((award, index) => (
                 <Card key={award.name} style={styles.awardCard}>
                   <View
                     style={[
@@ -400,5 +438,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 2,
     textAlign: "center",
+  },
+  emptyCard: {
+    padding: Spacing["3xl"],
+    alignItems: "center",
   },
 });

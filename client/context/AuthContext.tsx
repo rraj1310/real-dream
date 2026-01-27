@@ -16,6 +16,8 @@ export interface User {
   location?: string;
   isVendor: boolean;
   createdAt: string;
+  dailySpinsLeft?: number;
+  lastSpinDate?: string;
 }
 
 interface AuthContextType {

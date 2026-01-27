@@ -1,4 +1,5 @@
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useState } from "react";
+import { View, StyleSheet, ScrollView, Pressable, Modal, TextInput, Alert, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -11,8 +12,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
+import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { getApiUrl } from "@/lib/query-client";
 
 type MenuItem = {
   icon: keyof typeof Feather.glyphMap;
@@ -68,12 +72,21 @@ const accountItems: MenuItem[] = [
   {
     icon: "edit-2",
     label: "Edit Profile",
+    route: "EditProfile",
     iconBg: "#DBEAFE",
     iconColor: "#2563EB",
   },
   {
+    icon: "log-out",
+    label: "Sign Out",
+    route: "SignOut",
+    iconBg: "#FEF3C7",
+    iconColor: "#D97706",
+  },
+  {
     icon: "trash-2",
     label: "Delete Account",
+    route: "DeleteAccount",
     iconBg: "#FEE2E2",
     iconColor: "#DC2626",
     danger: true,
@@ -119,11 +132,74 @@ export default function ProfileScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
   const { theme, currentTheme } = useTheme();
+  const { user, logout, token, updateUser } = useAuth();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [editFullName, setEditFullName] = useState(user?.fullName || "");
+  const [editBio, setEditBio] = useState(user?.bio || "");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNavigate = (route?: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (route) {
+    if (route === "SignOut") {
+      handleLogout();
+    } else if (route === "EditProfile") {
+      setEditFullName(user?.fullName || "");
+      setEditBio(user?.bio || "");
+      setShowEditModal(true);
+    } else if (route === "DeleteAccount") {
+      setShowDeleteModal(true);
+    } else if (route) {
       navigation.navigate(route);
+    }
+  };
+
+  const handleLogout = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await logout();
+  };
+
+  const handleSaveProfile = async () => {
+    if (!token) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch(new URL('/api/profile', getApiUrl()).toString(), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ fullName: editFullName, bio: editBio }),
+      });
+      if (response.ok) {
+        const updatedUser = await response.json();
+        updateUser(updatedUser);
+        setShowEditModal(false);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!token) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch(new URL('/api/profile', getApiUrl()).toString(), {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        await logout();
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+    } finally {
+      setIsLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -159,7 +235,7 @@ export default function ProfileScreen() {
                 USERNAME
               </ThemedText>
               <ThemedText type="h3" style={styles.username}>
-                john_doe
+                @{user?.username || "user"}
               </ThemedText>
               <ThemedText
                 type="small"
@@ -168,8 +244,13 @@ export default function ProfileScreen() {
                 Full Name
               </ThemedText>
               <ThemedText type="body" style={styles.fullName}>
-                John Doe
+                {user?.fullName || "User"}
               </ThemedText>
+              {user?.bio ? (
+                <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.sm, textAlign: "center" }}>
+                  {user.bio}
+                </ThemedText>
+              ) : null}
             </View>
           </Card>
         </Animated.View>
@@ -286,6 +367,60 @@ export default function ProfileScreen() {
           </Card>
         </Animated.View>
       </ScrollView>
+
+      <Modal visible={showEditModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
+            <ThemedText type="h3" style={styles.modalTitle}>Edit Profile</ThemedText>
+            <ThemedText type="small" style={[styles.inputLabel, { color: theme.textSecondary }]}>Full Name</ThemedText>
+            <TextInput
+              style={[styles.textInput, { backgroundColor: theme.backgroundSecondary, color: theme.textPrimary }]}
+              value={editFullName}
+              onChangeText={setEditFullName}
+              placeholder="Enter your full name"
+              placeholderTextColor={theme.textMuted}
+            />
+            <ThemedText type="small" style={[styles.inputLabel, { color: theme.textSecondary }]}>Bio</ThemedText>
+            <TextInput
+              style={[styles.textInput, styles.bioInput, { backgroundColor: theme.backgroundSecondary, color: theme.textPrimary }]}
+              value={editBio}
+              onChangeText={setEditBio}
+              placeholder="Tell us about yourself"
+              placeholderTextColor={theme.textMuted}
+              multiline
+            />
+            <View style={styles.modalButtons}>
+              <Pressable onPress={() => setShowEditModal(false)} style={[styles.modalButton, { borderColor: theme.border }]}>
+                <ThemedText type="body">Cancel</ThemedText>
+              </Pressable>
+              <Button onPress={handleSaveProfile} disabled={isLoading} style={styles.saveButton}>
+                {isLoading ? "Saving..." : "Save"}
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showDeleteModal} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
+            <ThemedText type="h3" style={styles.modalTitle}>Delete Account</ThemedText>
+            <ThemedText type="body" style={{ color: theme.textSecondary, textAlign: "center", marginBottom: Spacing.xl }}>
+              Are you sure you want to delete your account? This action cannot be undone.
+            </ThemedText>
+            <View style={styles.modalButtons}>
+              <Pressable onPress={() => setShowDeleteModal(false)} style={[styles.modalButton, { borderColor: theme.border }]}>
+                <ThemedText type="body">Cancel</ThemedText>
+              </Pressable>
+              <Pressable onPress={handleDeleteAccount} style={[styles.deleteButton]}>
+                <ThemedText type="body" style={{ color: "#FFFFFF" }}>
+                  {isLoading ? "Deleting..." : "Delete"}
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -372,5 +507,53 @@ const styles = StyleSheet.create({
   menuLabel: {
     flex: 1,
     fontWeight: "500",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: Spacing.xl,
+  },
+  modalContent: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+  },
+  modalTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+  },
+  inputLabel: {
+    marginBottom: Spacing.xs,
+  },
+  textInput: {
+    borderRadius: BorderRadius.xs,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+    fontSize: 16,
+  },
+  bioInput: {
+    height: 100,
+    textAlignVertical: "top",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  modalButton: {
+    flex: 1,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xs,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  saveButton: {
+    flex: 1,
+  },
+  deleteButton: {
+    flex: 1,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xs,
+    backgroundColor: "#DC2626",
+    alignItems: "center",
   },
 });

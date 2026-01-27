@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -20,7 +20,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { getApiUrl } from "@/lib/query-client";
 
 const prizes = [
   { value: 10, label: "10 Coins", color: "#3B82F6" },
@@ -34,13 +36,27 @@ const prizes = [
 export default function LuckySpinScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
-  const { theme, userCoins, setUserCoins } = useTheme();
+  const { theme } = useTheme();
+  const { token, refreshUser, user } = useAuth();
   const [isSpinning, setIsSpinning] = useState(false);
   const [lastWin, setLastWin] = useState<number | null>(null);
   const [spinsLeft, setSpinsLeft] = useState(3);
+  const [error, setError] = useState("");
 
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (user) {
+      const today = new Date().toDateString();
+      const lastSpinDate = user.lastSpinDate ? new Date(user.lastSpinDate).toDateString() : null;
+      if (lastSpinDate !== today) {
+        setSpinsLeft(3);
+      } else {
+        setSpinsLeft(user.dailySpinsLeft || 0);
+      }
+    }
+  }, [user]);
 
   const spinStyle = useAnimatedStyle(() => ({
     transform: [
@@ -51,37 +67,59 @@ export default function LuckySpinScreen() {
 
   const handleWin = (prize: number) => {
     setLastWin(prize);
-    setUserCoins(userCoins + prize);
+    refreshUser();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const handleSpin = () => {
-    if (isSpinning || spinsLeft <= 0) return;
+  const handleSpin = async () => {
+    if (isSpinning || spinsLeft <= 0 || !token) return;
 
     setIsSpinning(true);
     setLastWin(null);
-    setSpinsLeft((prev) => prev - 1);
+    setError("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
-    const spinDegrees = 360 * 5 + Math.random() * 360;
+    try {
+      const response = await fetch(new URL('/api/wallet/spin', getApiUrl()).toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    scale.value = withSequence(
-      withTiming(1.05, { duration: 300 }),
-      withTiming(1, { duration: 200 })
-    );
+      const data = await response.json();
+      
+      if (!response.ok) {
+        setError(data.error || "Failed to spin");
+        setIsSpinning(false);
+        return;
+      }
 
-    rotation.value = withSequence(
-      withTiming(rotation.value + spinDegrees, {
-        duration: 3000,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-      })
-    );
+      const prize = data.prize;
+      setSpinsLeft(data.spinsLeft);
+      const spinDegrees = 360 * 5 + Math.random() * 360;
 
-    setTimeout(() => {
-      runOnJS(handleWin)(randomPrize.value);
-      runOnJS(setIsSpinning)(false);
-    }, 3100);
+      scale.value = withSequence(
+        withTiming(1.05, { duration: 300 }),
+        withTiming(1, { duration: 200 })
+      );
+
+      rotation.value = withSequence(
+        withTiming(rotation.value + spinDegrees, {
+          duration: 3000,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        })
+      );
+
+      setTimeout(() => {
+        runOnJS(handleWin)(prize);
+        runOnJS(setIsSpinning)(false);
+      }, 3100);
+    } catch (err) {
+      setError("Network error. Please try again.");
+      setIsSpinning(false);
+    }
   };
 
   return (
