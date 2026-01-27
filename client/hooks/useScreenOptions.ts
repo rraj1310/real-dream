@@ -2,7 +2,6 @@ import { Platform } from "react-native";
 import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 
 import { useTheme } from "@/hooks/useTheme";
-import { BorderRadius } from "@/constants/theme";
 
 interface ScreenOptionsConfig {
   transparent?: boolean;
@@ -18,6 +17,7 @@ export function useScreenOptions(
     headerBackTitleVisible: false,
     headerTitleStyle: {
       fontWeight: "600" as const,
+      color: theme.text,
     },
     contentStyle: {
       backgroundColor: theme.backgroundRoot,
