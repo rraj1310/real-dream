@@ -428,7 +428,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: AuthRequest, res) => {
     try {
-      const { dreamId, taskId } = req.params;
+      const dreamId = req.params.dreamId as string;
+      const taskId = req.params.taskId as string;
       const { title, description, dueDate, reminderDate, order } = req.body;
       const task = await storage.updateDreamTask(taskId, {
         title,
@@ -445,7 +446,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: AuthRequest, res) => {
     try {
-      const { dreamId, taskId } = req.params;
+      const dreamId = req.params.dreamId as string;
+      const taskId = req.params.taskId as string;
       await storage.deleteDreamTask(taskId);
       await storage.updateDreamProgress(dreamId);
       res.json({ success: true });
@@ -456,7 +458,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/dreams/:dreamId/tasks/:taskId/toggle", authMiddleware, async (req: AuthRequest, res) => {
     try {
-      const { dreamId, taskId } = req.params;
+      const dreamId = req.params.dreamId as string;
+      const taskId = req.params.taskId as string;
       const task = await storage.toggleDreamTaskComplete(taskId);
       
       if (!task) {
