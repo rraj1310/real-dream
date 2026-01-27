@@ -9,6 +9,7 @@ import ForgotPasswordScreen from "@/screens/ForgotPasswordScreen";
 import WallOfFameScreen from "@/screens/WallOfFameScreen";
 import WalletScreen from "@/screens/WalletScreen";
 import ChatScreen from "@/screens/ChatScreen";
+import SubscriptionScreen from "@/screens/SubscriptionScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/hooks/useTheme";
@@ -72,6 +73,11 @@ export default function RootStackNavigator() {
             options={({ route }) => ({
               headerTitle: (route.params as any)?.otherUserName || "Chat",
             })}
+          />
+          <Stack.Screen
+            name="Subscription"
+            component={SubscriptionScreen}
+            options={{ headerTitle: "Subscription" }}
           />
         </>
       ) : (
