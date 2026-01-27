@@ -4,12 +4,14 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ProfileScreen from "@/screens/ProfileScreen";
 import ThemeScreen from "@/screens/ThemeScreen";
 import WalletScreen from "@/screens/WalletScreen";
+import ConnectionsScreen from "@/screens/ConnectionsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 
 export type ProfileStackParamList = {
   Profile: undefined;
   Themes: undefined;
   Wallet: undefined;
+  Connections: undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -38,6 +40,13 @@ export default function ProfileStackNavigator() {
         component={WalletScreen}
         options={{
           headerTitle: "My Wallet",
+        }}
+      />
+      <Stack.Screen
+        name="Connections"
+        component={ConnectionsScreen}
+        options={{
+          headerTitle: "Connections",
         }}
       />
     </Stack.Navigator>

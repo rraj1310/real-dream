@@ -1,18 +1,33 @@
-import { View, StyleSheet, ScrollView, Pressable } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { getApiUrl } from "@/lib/query-client";
+
+type Dream = {
+  id: string;
+  title: string;
+  description?: string;
+  type: "personal" | "challenge" | "group";
+  progress: number;
+  isCompleted: boolean;
+  targetDate?: string;
+  createdAt: string;
+};
 
 type DreamType = {
   title: string;
@@ -22,29 +37,26 @@ type DreamType = {
   color: string;
 };
 
-const dreamTypes: DreamType[] = [
-  {
+const dreamTypeConfig = {
+  personal: {
     title: "PERSONAL REALDREAM",
-    icon: "user",
+    icon: "user" as const,
     description: "Individual goals and aspirations",
-    count: 4,
     color: "#3B82F6",
   },
-  {
+  challenge: {
     title: "REALDREAM CHALLENGE",
-    icon: "award",
+    icon: "award" as const,
     description: "Compete with others",
-    count: 2,
     color: "#EAB308",
   },
-  {
+  group: {
     title: "GROUP REALDREAM",
-    icon: "users",
+    icon: "users" as const,
     description: "Collaborate with teams",
-    count: 2,
     color: "#8B5CF6",
   },
-];
+};
 
 type DreamGoal = {
   icon: keyof typeof Feather.glyphMap;
@@ -53,78 +65,63 @@ type DreamGoal = {
   iconColor: string;
 };
 
-const dreamGoals: DreamGoal[] = [
-  { icon: "x-circle", label: "Stop Smoking", bgColor: "#FEE2E2", iconColor: "#DC2626" },
-  { icon: "slash", label: "Quit Drinking", bgColor: "#FFEDD5", iconColor: "#EA580C" },
-  { icon: "truck", label: "New Car", bgColor: "#FEE2E2", iconColor: "#DC2626" },
-  { icon: "map-pin", label: "Japan Trip", bgColor: "#DBEAFE", iconColor: "#2563EB" },
-  { icon: "home", label: "HOME", bgColor: "#DCFCE7", iconColor: "#16A34A" },
-  { icon: "heart", label: "Life Partner", bgColor: "#FCE7F3", iconColor: "#DB2777" },
-];
-
-function DreamTypeCard({ type, index }: { type: DreamType; index: number }) {
+function DreamCard({ dream, index }: { dream: Dream; index: number }) {
   const { theme } = useTheme();
+  const config = dreamTypeConfig[dream.type];
 
   return (
     <Animated.View entering={FadeInDown.delay(index * 100).springify()}>
       <Card style={styles.dreamCard}>
         <View style={styles.dreamHeader}>
-          <View style={styles.dreamTitleRow}>
-            <View style={[styles.dreamIcon, { backgroundColor: type.color }]}>
-              <Feather name={type.icon} size={24} color="#FFFFFF" />
-            </View>
-            <View style={styles.dreamTitleContainer}>
-              <ThemedText type="small" style={styles.dreamTitle}>
-                {type.title}
+          <View style={[styles.dreamIcon, { backgroundColor: config.color }]}>
+            <Feather name={config.icon} size={24} color="#FFFFFF" />
+          </View>
+          <View style={styles.dreamContent}>
+            <ThemedText type="bodyMedium" numberOfLines={1}>
+              {dream.title}
+            </ThemedText>
+            {dream.description ? (
+              <ThemedText type="small" style={{ color: theme.textSecondary }} numberOfLines={2}>
+                {dream.description}
               </ThemedText>
-              <ThemedText
-                type="small"
-                style={[styles.dreamDescription, { color: theme.textSecondary }]}
-              >
-                {type.description}
+            ) : null}
+            <View style={styles.progressContainer}>
+              <View style={[styles.progressBar, { backgroundColor: theme.backgroundSecondary }]}>
+                <View style={[styles.progressFill, { width: `${dream.progress}%`, backgroundColor: config.color }]} />
+              </View>
+              <ThemedText type="xs" style={{ color: theme.textSecondary }}>
+                {dream.progress}%
               </ThemedText>
             </View>
           </View>
-          <Feather name="chevron-right" size={24} color={theme.textMuted} />
-        </View>
-
-        <View style={styles.goalsGrid}>
-          {dreamGoals.slice(0, 4).map((goal, i) => (
-            <View key={i} style={styles.goalItem}>
-              <View style={[styles.goalIcon, { backgroundColor: goal.bgColor }]}>
-                <Feather name={goal.icon} size={24} color={goal.iconColor} />
-              </View>
-              <ThemedText
-                type="xs"
-                style={[styles.goalLabel, { color: theme.textSecondary }]}
-                numberOfLines={1}
-              >
-                {goal.label}
-              </ThemedText>
+          {dream.isCompleted ? (
+            <View style={[styles.completedBadge, { backgroundColor: "#DCFCE7" }]}>
+              <Feather name="check" size={16} color="#16A34A" />
             </View>
-          ))}
+          ) : null}
         </View>
-
-        {index === 0 ? (
-          <View style={styles.goalsGrid}>
-            {dreamGoals.slice(4).map((goal, i) => (
-              <View key={i} style={styles.goalItem}>
-                <View style={[styles.goalIcon, { backgroundColor: goal.bgColor }]}>
-                  <Feather name={goal.icon} size={24} color={goal.iconColor} />
-                </View>
-                <ThemedText
-                  type="xs"
-                  style={[styles.goalLabel, { color: theme.textSecondary }]}
-                  numberOfLines={1}
-                >
-                  {goal.label}
-                </ThemedText>
-              </View>
-            ))}
-          </View>
-        ) : null}
       </Card>
     </Animated.View>
+  );
+}
+
+function EmptyDreamsCard({ type, onPress }: { type: "personal" | "challenge" | "group"; onPress: () => void }) {
+  const { theme } = useTheme();
+  const config = dreamTypeConfig[type];
+
+  return (
+    <Card onPress={onPress} style={styles.emptyCard}>
+      <View style={[styles.emptyIcon, { backgroundColor: config.color + "20" }]}>
+        <Feather name={config.icon} size={32} color={config.color} />
+      </View>
+      <ThemedText type="small" style={styles.emptyTitle}>{config.title}</ThemedText>
+      <ThemedText type="xs" style={{ color: theme.textSecondary, textAlign: "center" }}>
+        {config.description}
+      </ThemedText>
+      <View style={[styles.addButton, { backgroundColor: config.color }]}>
+        <Feather name="plus" size={16} color="#FFFFFF" />
+      </View>
+    </Card>
   );
 }
 
@@ -133,10 +130,49 @@ export default function MyRealDreamScreen() {
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
+  const { theme } = useTheme();
+  const { token } = useAuth();
+  const [dreams, setDreams] = useState<Dream[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchDreams = useCallback(async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(new URL('/api/dreams', getApiUrl()).toString(), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setDreams(data);
+      }
+    } catch (error) {
+      console.error('Error fetching dreams:', error);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  }, [token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchDreams();
+    }, [fetchDreams])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchDreams();
+  };
 
   const handleCreateDream = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    navigation.navigate("CreateDream");
   };
+
+  const personalDreams = dreams.filter(d => d.type === "personal");
+  const challengeDreams = dreams.filter(d => d.type === "challenge");
+  const groupDreams = dreams.filter(d => d.type === "group");
 
   return (
     <ThemedView style={styles.container}>
@@ -151,25 +187,69 @@ export default function MyRealDreamScreen() {
         ]}
         scrollIndicatorInsets={{ bottom: insets.bottom }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.link} />
+        }
       >
-        {dreamTypes.map((type, index) => (
-          <DreamTypeCard key={type.title} type={type} index={index} />
-        ))}
-
-        <Animated.View entering={FadeInDown.delay(300).springify()}>
-          <Button
-            onPress={handleCreateDream}
-            style={styles.createButton}
-            testID="button-create-dream"
-          >
-            <View style={styles.createButtonContent}>
-              <Feather name="plus" size={20} color="#FFFFFF" />
-              <ThemedText style={styles.createButtonText}>
-                START NEW REALDREAM
+        {isLoading ? (
+          <ActivityIndicator size="large" color={theme.link} style={{ marginTop: Spacing["3xl"] }} />
+        ) : (
+          <>
+            <Animated.View entering={FadeInDown.springify()}>
+              <ThemedText type="small" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+                PERSONAL ({personalDreams.length})
               </ThemedText>
-            </View>
-          </Button>
-        </Animated.View>
+              {personalDreams.length > 0 ? (
+                personalDreams.map((dream, idx) => (
+                  <DreamCard key={dream.id} dream={dream} index={idx} />
+                ))
+              ) : (
+                <EmptyDreamsCard type="personal" onPress={handleCreateDream} />
+              )}
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(100).springify()}>
+              <ThemedText type="small" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+                CHALLENGES ({challengeDreams.length})
+              </ThemedText>
+              {challengeDreams.length > 0 ? (
+                challengeDreams.map((dream, idx) => (
+                  <DreamCard key={dream.id} dream={dream} index={idx} />
+                ))
+              ) : (
+                <EmptyDreamsCard type="challenge" onPress={handleCreateDream} />
+              )}
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(200).springify()}>
+              <ThemedText type="small" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+                GROUP ({groupDreams.length})
+              </ThemedText>
+              {groupDreams.length > 0 ? (
+                groupDreams.map((dream, idx) => (
+                  <DreamCard key={dream.id} dream={dream} index={idx} />
+                ))
+              ) : (
+                <EmptyDreamsCard type="group" onPress={handleCreateDream} />
+              )}
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(300).springify()}>
+              <Button
+                onPress={handleCreateDream}
+                style={styles.createButton}
+                testID="button-create-dream"
+              >
+                <View style={styles.createButtonContent}>
+                  <Feather name="plus" size={20} color="#FFFFFF" />
+                  <ThemedText style={styles.createButtonText}>
+                    START NEW REALDREAM
+                  </ThemedText>
+                </View>
+              </Button>
+            </Animated.View>
+          </>
+        )}
       </ScrollView>
     </ThemedView>
   );
@@ -184,63 +264,85 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
+    gap: Spacing.md,
+  },
+  sectionLabel: {
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   dreamCard: {
-    padding: Spacing.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   dreamHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: Spacing.lg,
-  },
-  dreamTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
+    alignItems: "flex-start",
   },
   dreamIcon: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: BorderRadius.sm,
     alignItems: "center",
     justifyContent: "center",
     marginRight: Spacing.md,
   },
-  dreamTitleContainer: {
+  dreamContent: {
     flex: 1,
+    gap: Spacing.xs,
   },
-  dreamTitle: {
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-  dreamDescription: {
-    fontSize: 13,
-  },
-  goalsGrid: {
+  progressContainer: {
     flexDirection: "row",
-    gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  goalItem: {
     alignItems: "center",
-    width: 60,
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
   },
-  goalIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: BorderRadius.sm,
+  progressBar: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  completedBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: BorderRadius.full,
     alignItems: "center",
     justifyContent: "center",
+    marginLeft: Spacing.sm,
+  },
+  emptyCard: {
+    padding: Spacing.xl,
+    alignItems: "center",
+    marginBottom: Spacing.sm,
+  },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.md,
+  },
+  emptyTitle: {
+    fontWeight: "600",
     marginBottom: Spacing.xs,
   },
-  goalLabel: {
-    textAlign: "center",
-    fontSize: 11,
+  addButton: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: Spacing.lg,
   },
   createButton: {
-    marginTop: Spacing.sm,
+    marginTop: Spacing.lg,
   },
   createButtonContent: {
     flexDirection: "row",

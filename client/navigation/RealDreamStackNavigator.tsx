@@ -2,11 +2,12 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import MyRealDreamScreen from "@/screens/MyRealDreamScreen";
+import CreateDreamScreen from "@/screens/CreateDreamScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 
 export type RealDreamStackParamList = {
   MyRealDream: undefined;
-  CreateRealDream: undefined;
+  CreateDream: undefined;
 };
 
 const Stack = createNativeStackNavigator<RealDreamStackParamList>();
@@ -21,6 +22,13 @@ export default function RealDreamStackNavigator() {
         component={MyRealDreamScreen}
         options={{
           headerTitle: "MY REALDREAM",
+        }}
+      />
+      <Stack.Screen
+        name="CreateDream"
+        component={CreateDreamScreen}
+        options={{
+          headerTitle: "Create Dream",
         }}
       />
     </Stack.Navigator>
