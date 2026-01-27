@@ -6,6 +6,7 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 ## Tech Stack
 - **Frontend**: React Native + Expo (SDK 54)
 - **Backend**: Express.js with TypeScript
+- **Authentication**: Firebase Authentication (Email/Password, Google OAuth, Facebook OAuth, Phone OTP)
 - **State Management**: React Query (TanStack Query) + ThemeContext
 - **Navigation**: React Navigation 7 (stack + bottom tabs)
 - **UI Components**: Custom themed components with react-native-reanimated animations
@@ -191,3 +192,10 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Added real-time MessagesScreen with conversation list and unread counts
 - Added ChatScreen for one-on-one messaging with auto-refresh
 - API routes added for conversations and mark messages as read
+- January 2026: Implemented REAL Firebase Authentication replacing mock auth system
+- Firebase Email/Password, Google OAuth, Facebook OAuth, and Phone OTP authentication
+- Firebase Admin SDK integration on backend for token verification
+- Firebase password reset flow using email links (Firebase handles the reset page)
+- Database schema updated with firebaseUid field linking users to Firebase accounts
+- PhoneSignInScreen with OTP verification and reCAPTCHA support
+- All protected API endpoints now verify Firebase ID tokens
