@@ -168,6 +168,10 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Added premium theme purchase functionality with coins
 - Enhanced UI with LinearGradient components throughout
 - Added interactive medal/trophy modals on Champions screen
-- Created Market, Gallery, and NewsFeed screens
+- Created Market, Gallery, and NewsFeed screens with real API integration
 - Updated navigation to match PDF outline
 - Improved visual design with gradient backgrounds and animations
+- Added SubscriptionScreen with Bronze ($4.99), Silver ($9.99), Gold ($19.99), and Platinum ($29.99) tiers
+- Settings screen now shows real user data and navigates to Subscription
+- Market, Gallery, and News Feed screens now fetch real data from the database
+- API endpoints enhanced to include user information with posts
