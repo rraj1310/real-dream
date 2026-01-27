@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
-import { View, StyleSheet, Pressable, TextInput, ScrollView, ActivityIndicator, Platform } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { View, StyleSheet, Pressable, TextInput, ScrollView, ActivityIndicator, Platform, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
@@ -16,6 +15,11 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { getApiUrl } from "@/lib/query-client";
+
+let DateTimePicker: any = null;
+if (Platform.OS !== 'web') {
+  DateTimePicker = require("@react-native-community/datetimepicker").default;
+}
 
 type DreamTypeOption = "personal" | "challenge" | "group";
 
@@ -47,6 +51,9 @@ export default function CreateDreamScreen() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDueDate, setNewTaskDueDate] = useState<Date | null>(null);
   const [showTaskDatePicker, setShowTaskDatePicker] = useState(false);
+  
+  const [webDateModal, setWebDateModal] = useState<'start' | 'target' | 'task' | null>(null);
+  const [tempWebDate, setTempWebDate] = useState("");
 
   useEffect(() => {
     if (route.params?.type) {
@@ -58,21 +65,48 @@ export default function CreateDreamScreen() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const onStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const formatDateForInput = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleDateButtonPress = (type: 'start' | 'target' | 'task') => {
+    if (Platform.OS === 'web') {
+      const dateToUse = type === 'start' ? startDate : type === 'target' ? targetDate : (newTaskDueDate || new Date());
+      setTempWebDate(formatDateForInput(dateToUse));
+      setWebDateModal(type);
+    } else {
+      if (type === 'start') setShowStartPicker(true);
+      else if (type === 'target') setShowTargetPicker(true);
+      else setShowTaskDatePicker(true);
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleWebDateConfirm = () => {
+    const newDate = new Date(tempWebDate);
+    if (!isNaN(newDate.getTime())) {
+      if (webDateModal === 'start') setStartDate(newDate);
+      else if (webDateModal === 'target') setTargetDate(newDate);
+      else if (webDateModal === 'task') setNewTaskDueDate(newDate);
+    }
+    setWebDateModal(null);
+  };
+
+  const onStartDateChange = (event: any, selectedDate?: Date) => {
     setShowStartPicker(Platform.OS === 'ios');
     if (selectedDate) {
       setStartDate(selectedDate);
     }
   };
 
-  const onTargetDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const onTargetDateChange = (event: any, selectedDate?: Date) => {
     setShowTargetPicker(Platform.OS === 'ios');
     if (selectedDate) {
       setTargetDate(selectedDate);
     }
   };
 
-  const onTaskDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const onTaskDateChange = (event: any, selectedDate?: Date) => {
     setShowTaskDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setNewTaskDueDate(selectedDate);
@@ -214,7 +248,7 @@ export default function CreateDreamScreen() {
           <View style={styles.dateRow}>
             <Pressable 
               style={styles.dateButton}
-              onPress={() => setShowStartPicker(true)}
+              onPress={() => handleDateButtonPress('start')}
               testID="button-start-date"
             >
               <Feather name="calendar" size={18} color="#A78BFA" />
@@ -225,7 +259,7 @@ export default function CreateDreamScreen() {
             </Pressable>
             <Pressable 
               style={styles.dateButton}
-              onPress={() => setShowTargetPicker(true)}
+              onPress={() => handleDateButtonPress('target')}
               testID="button-target-date"
             >
               <Feather name="flag" size={18} color="#22C55E" />
@@ -237,7 +271,7 @@ export default function CreateDreamScreen() {
           </View>
         </Animated.View>
 
-        {showStartPicker ? (
+        {Platform.OS !== 'web' && showStartPicker && DateTimePicker ? (
           <DateTimePicker
             value={startDate}
             mode="date"
@@ -247,7 +281,7 @@ export default function CreateDreamScreen() {
           />
         ) : null}
 
-        {showTargetPicker ? (
+        {Platform.OS !== 'web' && showTargetPicker && DateTimePicker ? (
           <DateTimePicker
             value={targetDate}
             mode="date"
@@ -276,7 +310,8 @@ export default function CreateDreamScreen() {
             />
             <Pressable 
               style={styles.taskDateButton}
-              onPress={() => setShowTaskDatePicker(true)}
+              onPress={() => handleDateButtonPress('task')}
+              testID="button-task-date"
             >
               <Feather 
                 name="calendar" 
@@ -299,7 +334,7 @@ export default function CreateDreamScreen() {
             </ThemedText>
           ) : null}
 
-          {showTaskDatePicker ? (
+          {Platform.OS !== 'web' && showTaskDatePicker && DateTimePicker ? (
             <DateTimePicker
               value={newTaskDueDate || new Date()}
               mode="date"
@@ -366,6 +401,57 @@ export default function CreateDreamScreen() {
           </Button>
         </Animated.View>
       </ScrollView>
+
+      <Modal
+        visible={webDateModal !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setWebDateModal(null)}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={() => setWebDateModal(null)}
+        >
+          <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
+            <ThemedText type="h3" style={styles.modalTitle}>
+              {webDateModal === 'start' ? 'Select Start Date' : 
+               webDateModal === 'target' ? 'Select Target Date' : 
+               'Select Due Date'}
+            </ThemedText>
+            
+            <TextInput
+              style={styles.webDateInput}
+              value={tempWebDate}
+              onChangeText={setTempWebDate}
+              placeholder="YYYY-MM-DD"
+              placeholderTextColor="#8B7FC7"
+              keyboardType="default"
+              testID="input-web-date"
+            />
+            
+            <ThemedText type="small" style={styles.dateHelperText}>
+              Enter date in format: YYYY-MM-DD (e.g., 2026-02-15)
+            </ThemedText>
+
+            <View style={styles.modalButtons}>
+              <Button 
+                variant="outline" 
+                onPress={() => setWebDateModal(null)}
+                style={styles.modalButton}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onPress={handleWebDateConfirm}
+                style={styles.modalButton}
+                testID="button-confirm-date"
+              >
+                Confirm
+              </Button>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </GalaxyBackground>
   );
 }
@@ -528,5 +614,41 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    padding: Spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: "#1E1B2E",
+    borderRadius: BorderRadius.md,
+    padding: Spacing.xl,
+    gap: Spacing.lg,
+  },
+  modalTitle: {
+    color: "#FFFFFF",
+    textAlign: "center",
+  },
+  webDateInput: {
+    backgroundColor: "rgba(139, 127, 199, 0.2)",
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    color: "#FFFFFF",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  dateHelperText: {
+    color: "#8B7FC7",
+    textAlign: "center",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  modalButton: {
+    flex: 1,
   },
 });
