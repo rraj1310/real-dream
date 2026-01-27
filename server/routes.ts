@@ -769,7 +769,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/notifications/:id/read", authMiddleware, async (req: AuthRequest, res) => {
     try {
       const id = req.params.id as string;
-      await storage.markNotificationRead(id);
+      const updated = await storage.markNotificationRead(id, req.user!.id);
+      if (!updated) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to mark notification as read" });
@@ -933,6 +936,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(items);
     } catch (error) {
       res.status(500).json({ error: "Failed to get market items" });
+    }
+  });
+
+  // Purchase a market item
+  app.post("/api/market/:id/purchase", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const itemId = req.params.id as string;
+      const userId = req.user!.id;
+
+      const item = await storage.getMarketItem(itemId);
+      if (!item) {
+        return res.status(404).json({ error: "Item not found" });
+      }
+      if (!item.isActive) {
+        return res.status(400).json({ error: "Item is no longer available" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      if ((user.coins || 0) < item.price) {
+        return res.status(400).json({ error: "Insufficient coins" });
+      }
+
+      await storage.updateUser(userId, {
+        coins: (user.coins || 0) - item.price,
+      });
+
+      await storage.createTransaction({
+        userId,
+        amount: -item.price,
+        type: "purchase",
+        description: `Purchased ${item.title}`,
+      });
+
+      res.json({ success: true, newBalance: (user.coins || 0) - item.price });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to purchase item" });
+    }
+  });
+
+  // Purchase a theme
+  app.post("/api/themes/:id/purchase", authMiddleware, async (req: AuthRequest, res) => {
+    try {
+      const themeId = req.params.id as string;
+      const userId = req.user!.id;
+      const { price, name } = req.body;
+
+      if (!price || price < 0) {
+        return res.status(400).json({ error: "Invalid price" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      if ((user.coins || 0) < price) {
+        return res.status(400).json({ error: "Insufficient coins" });
+      }
+
+      await storage.updateUser(userId, {
+        coins: (user.coins || 0) - price,
+      });
+
+      await storage.createTransaction({
+        userId,
+        amount: -price,
+        type: "purchase",
+        description: `Purchased ${name || themeId} theme`,
+      });
+
+      res.json({ success: true, newBalance: (user.coins || 0) - price });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to purchase theme" });
     }
   });
 

@@ -58,7 +58,7 @@ export interface IStorage {
 
   getNotifications(userId: string): Promise<Notification[]>;
   createNotification(notification: Partial<Notification>): Promise<Notification>;
-  markNotificationRead(id: string): Promise<void>;
+  markNotificationRead(id: string, userId: string): Promise<boolean>;
   markAllNotificationsRead(userId: string): Promise<void>;
 
   getTransactions(userId: string): Promise<Transaction[]>;
@@ -76,6 +76,7 @@ export interface IStorage {
   likePost(postId: string, userId: string): Promise<void>;
 
   getMarketItems(category?: string): Promise<any[]>;
+  getMarketItem(id: string): Promise<any | null>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -242,8 +243,11 @@ class DatabaseStorage implements IStorage {
     return notification;
   }
 
-  async markNotificationRead(id: string): Promise<void> {
-    await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+  async markNotificationRead(id: string, userId: string): Promise<boolean> {
+    const result = await db.update(notifications)
+      .set({ isRead: true })
+      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)));
+    return (result as any).rowCount > 0;
   }
 
   async markAllNotificationsRead(userId: string): Promise<void> {
@@ -435,6 +439,11 @@ class DatabaseStorage implements IStorage {
   async getMarketItemCount(): Promise<number> {
     const result = await db.select({ count: sql<number>`count(*)` }).from(marketItems);
     return result[0]?.count || 0;
+  }
+
+  async getMarketItem(id: string): Promise<any | null> {
+    const [item] = await db.select().from(marketItems).where(eq(marketItems.id, id));
+    return item || null;
   }
 
   async getUserByGoogleId(googleId: string): Promise<User | undefined> {

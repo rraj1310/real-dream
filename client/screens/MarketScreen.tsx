@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl, Modal, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -54,6 +54,9 @@ export default function MarketScreen() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<MarketItem | null>(null);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   const fetchMarketItems = async () => {
     try {
@@ -82,6 +85,44 @@ export default function MarketScreen() {
 
   const handlePurchase = (item: MarketItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedItem(item);
+    setPurchaseModalVisible(true);
+  };
+
+  const confirmPurchase = async () => {
+    if (!selectedItem || !token) return;
+    
+    setIsPurchasing(true);
+    try {
+      const response = await fetch(
+        new URL(`/api/market/${selectedItem.id}/purchase`, getApiUrl()).toString(),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Success", `You purchased ${selectedItem.title}!`);
+        setPurchaseModalVisible(false);
+        setSelectedItem(null);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert("Error", data.error || "Failed to purchase item");
+      }
+    } catch (error) {
+      console.error("Purchase failed:", error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert("Error", "Failed to complete purchase");
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   const onRefresh = () => {
@@ -230,6 +271,69 @@ export default function MarketScreen() {
           </View>
         )}
       </ScrollView>
+
+      <Modal
+        visible={purchaseModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPurchaseModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            {selectedItem ? (
+              <>
+                <LinearGradient
+                  colors={getGradient(selectedItem.category)}
+                  style={styles.modalIcon}
+                >
+                  <Feather
+                    name={getIcon(selectedItem.category)}
+                    size={32}
+                    color="#FFFFFF"
+                  />
+                </LinearGradient>
+                <ThemedText type="h3" style={styles.modalTitle}>
+                  {selectedItem.title}
+                </ThemedText>
+                <ThemedText
+                  type="small"
+                  style={[styles.modalDescription, { color: theme.textSecondary }]}
+                >
+                  {selectedItem.description || "No description available"}
+                </ThemedText>
+                <View style={styles.modalPriceContainer}>
+                  <Feather name="dollar-sign" size={20} color={theme.yellow} />
+                  <ThemedText type="h2" style={{ color: theme.yellow }}>
+                    {selectedItem.price || 0}
+                  </ThemedText>
+                </View>
+                <View style={styles.modalButtons}>
+                  <Pressable
+                    style={[styles.modalButton, styles.cancelButton]}
+                    onPress={() => setPurchaseModalVisible(false)}
+                    disabled={isPurchasing}
+                  >
+                    <ThemedText type="bodyMedium">Cancel</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.modalButton, { backgroundColor: theme.accent }]}
+                    onPress={confirmPurchase}
+                    disabled={isPurchasing}
+                  >
+                    {isPurchasing ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <ThemedText type="bodyMedium" style={{ color: "#FFFFFF" }}>
+                        Confirm Purchase
+                      </ThemedText>
+                    )}
+                  </Pressable>
+                </View>
+              </>
+            ) : null}
+          </View>
+        </View>
+      </Modal>
     </GalaxyBackground>
   );
 }
@@ -331,5 +435,57 @@ const styles = StyleSheet.create({
   emptyDescription: {
     textAlign: "center",
     maxWidth: "80%",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.xl,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 340,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    alignItems: "center",
+  },
+  modalIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  modalTitle: {
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: Spacing.sm,
+  },
+  modalDescription: {
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+  },
+  modalPriceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginBottom: Spacing.xl,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
 });
