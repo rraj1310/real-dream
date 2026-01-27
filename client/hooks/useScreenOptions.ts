@@ -1,35 +1,50 @@
 import { Platform } from "react-native";
 import { NativeStackNavigationOptions } from "@react-navigation/native-stack";
-import { isLiquidGlassAvailable } from "expo-glass-effect";
 
 import { useTheme } from "@/hooks/useTheme";
+import { BorderRadius } from "@/constants/theme";
 
-interface UseScreenOptionsParams {
+interface ScreenOptionsConfig {
   transparent?: boolean;
 }
 
-export function useScreenOptions({
-  transparent = true,
-}: UseScreenOptionsParams = {}): NativeStackNavigationOptions {
+export function useScreenOptions(
+  config: ScreenOptionsConfig = { transparent: true }
+): NativeStackNavigationOptions {
   const { theme, isDark } = useTheme();
 
-  return {
-    headerTitleAlign: "center",
-    headerTransparent: transparent,
-    headerBlurEffect: isDark ? "dark" : "light",
+  const baseOptions: NativeStackNavigationOptions = {
     headerTintColor: theme.text,
-    headerStyle: {
-      backgroundColor: Platform.select({
-        ios: undefined,
-        android: theme.backgroundRoot,
-        web: theme.backgroundRoot,
-      }),
+    headerBackTitleVisible: false,
+    headerTitleStyle: {
+      fontWeight: "600" as const,
     },
-    gestureEnabled: true,
-    gestureDirection: "horizontal",
-    fullScreenGestureEnabled: isLiquidGlassAvailable() ? false : true,
     contentStyle: {
       backgroundColor: theme.backgroundRoot,
+    },
+    animation: "slide_from_right",
+  };
+
+  if (config.transparent) {
+    return {
+      ...baseOptions,
+      headerTransparent: true,
+      headerBlurEffect: isDark ? "dark" : "light",
+      headerStyle: {
+        backgroundColor: Platform.select({
+          ios: "transparent",
+          android: theme.backgroundDefault,
+          web: theme.backgroundDefault,
+        }),
+      },
+    };
+  }
+
+  return {
+    ...baseOptions,
+    headerTransparent: false,
+    headerStyle: {
+      backgroundColor: theme.backgroundDefault,
     },
   };
 }

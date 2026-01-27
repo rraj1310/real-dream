@@ -3,13 +3,18 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Platform, StyleSheet } from "react-native";
+
 import HomeStackNavigator from "@/navigation/HomeStackNavigator";
+import RealDreamStackNavigator from "@/navigation/RealDreamStackNavigator";
 import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
+import SettingsStackNavigator from "@/navigation/SettingsStackNavigator";
 import { useTheme } from "@/hooks/useTheme";
 
 export type MainTabParamList = {
   HomeTab: undefined;
+  RealDreamTab: undefined;
   ProfileTab: undefined;
+  SettingsTab: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -27,7 +32,8 @@ export default function MainTabNavigator() {
           position: "absolute",
           backgroundColor: Platform.select({
             ios: "transparent",
-            android: theme.backgroundRoot,
+            android: theme.backgroundDefault,
+            web: theme.backgroundDefault,
           }),
           borderTopWidth: 0,
           elevation: 0,
@@ -54,12 +60,32 @@ export default function MainTabNavigator() {
         }}
       />
       <Tab.Screen
+        name="RealDreamTab"
+        component={RealDreamStackNavigator}
+        options={{
+          title: "RealDream",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="target" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="ProfileTab"
         component={ProfileStackNavigator}
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="SettingsTab"
+        component={SettingsStackNavigator}
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="settings" size={size} color={color} />
           ),
         }}
       />
