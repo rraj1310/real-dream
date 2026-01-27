@@ -10,6 +10,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -90,6 +91,8 @@ export default function SettingsScreen() {
             </View>
           </Card>
         </Animated.View>
+
+        <AdBanner variant="compact" />
 
         <Animated.View entering={FadeInDown.delay(100).springify()}>
           <Card style={styles.menuCard}>

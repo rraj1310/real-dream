@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -192,6 +193,8 @@ export default function NewsFeedScreen() {
             See what others are achieving
           </ThemedText>
         </Animated.View>
+
+        <AdBanner />
 
         {isLoading ? (
           <View style={styles.loadingContainer}>

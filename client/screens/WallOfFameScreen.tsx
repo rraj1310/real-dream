@@ -8,6 +8,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -134,6 +135,8 @@ export default function WallOfFameScreen() {
             ))}
           </View>
         </Animated.View>
+
+        <AdBanner variant="compact" />
 
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <ThemedText type="body" style={styles.sectionTitle}>

@@ -8,6 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
@@ -131,6 +132,8 @@ export default function NotificationsScreen() {
             </Pressable>
           </View>
         </Animated.View>
+
+        <AdBanner variant="compact" />
 
         {notifications.map((notification, index) => (
           <Animated.View

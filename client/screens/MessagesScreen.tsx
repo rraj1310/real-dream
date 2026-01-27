@@ -11,6 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -168,6 +169,8 @@ export default function MessagesScreen() {
             ) : null}
           </View>
         </Animated.View>
+
+        <AdBanner variant="compact" />
 
         {isLoading ? (
           <View style={styles.loadingContainer}>

@@ -13,6 +13,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { getApiUrl } from "@/lib/query-client";
@@ -174,6 +175,8 @@ export default function ChampionsScreen() {
             <Feather name="chevron-right" size={20} color={theme.textMuted} />
           </Card>
         </Animated.View>
+
+        <AdBanner variant="compact" />
 
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <View style={styles.sectionHeader}>

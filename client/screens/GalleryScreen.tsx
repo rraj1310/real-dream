@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
+import { AdBanner } from "@/components/AdBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { getApiUrl } from "@/lib/query-client";
@@ -119,6 +120,8 @@ export default function GalleryScreen() {
             Explore achievements from our community
           </ThemedText>
         </Animated.View>
+
+        <AdBanner />
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
