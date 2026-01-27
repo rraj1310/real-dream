@@ -41,7 +41,7 @@ const notifications: Notification[] = [
   {
     id: "3",
     title: "Daily Reward Ready",
-    description: "Your daily spin is available! Win up to 500 coins.",
+    description: "Your daily spin is available! Win up to 500 points.",
     time: "2 hours ago",
     type: "reward",
     read: false,

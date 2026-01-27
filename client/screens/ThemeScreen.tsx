@@ -80,7 +80,7 @@ function ThemeCard({
               <View style={[styles.priceBadge, { backgroundColor: theme.accent + "20" }]}>
                 <Feather name="lock" size={12} color={theme.accent} />
                 <ThemedText type="xs" style={{ color: theme.accent, marginLeft: 4 }}>
-                  {themeData.price} coins
+                  {themeData.price} points
                 </ThemedText>
               </View>
             )
@@ -161,13 +161,13 @@ export default function ThemeScreen() {
         <Animated.View entering={FadeInDown.springify()}>
           <View style={styles.balanceCard}>
             <View style={[styles.coinIcon, { backgroundColor: theme.yellow + "20" }]}>
-              <Feather name="dollar-sign" size={24} color={theme.yellow} />
+              <Feather name="star" size={24} color={theme.yellow} />
             </View>
             <View>
               <ThemedText type="small" style={{ color: "#C4B5FD" }}>
                 Your Balance
               </ThemedText>
-              <ThemedText type="h3">{userCoins.toLocaleString()} coins</ThemedText>
+              <ThemedText type="h3">{userCoins.toLocaleString()} points</ThemedText>
             </View>
           </View>
         </Animated.View>
@@ -199,7 +199,7 @@ export default function ThemeScreen() {
             type="small"
             style={[styles.sectionSubtitle, { color: "#C4B5FD" }]}
           >
-            Unlock beautiful themes with your coins
+            Unlock beautiful themes with your points
           </ThemedText>
           <View style={styles.themesGrid}>
             {premiumThemes.map((t, index) => (
@@ -245,7 +245,7 @@ export default function ThemeScreen() {
                   type="body"
                   style={[styles.modalPrice, { color: "#C4B5FD" }]}
                 >
-                  Price: {selectedPurchaseTheme.price} coins
+                  Price: {selectedPurchaseTheme.price} points
                 </ThemedText>
 
                 <ThemedText
@@ -255,7 +255,7 @@ export default function ThemeScreen() {
                     { color: canAfford ? theme.success : theme.error },
                   ]}
                 >
-                  Your balance: {userCoins} coins
+                  Your balance: {userCoins} points
                 </ThemedText>
 
                 <View style={styles.modalButtons}>
@@ -271,7 +271,7 @@ export default function ThemeScreen() {
                     disabled={!canAfford}
                     style={styles.modalButton}
                   >
-                    {canAfford ? "Purchase" : "Not Enough Coins"}
+                    {canAfford ? "Purchase" : "Not Enough Points"}
                   </Button>
                 </View>
               </>

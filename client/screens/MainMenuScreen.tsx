@@ -179,7 +179,7 @@ export default function MainMenuScreen() {
                     Your Balance
                   </ThemedText>
                   <ThemedText type="h2" style={styles.coinAmount}>
-                    {user?.coins?.toLocaleString() || "0"} Coins
+                    {user?.coins?.toLocaleString() || "0"} Points
                   </ThemedText>
                 </View>
               </View>

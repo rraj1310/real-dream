@@ -25,12 +25,12 @@ import { Spacing, BorderRadius } from "@/constants/theme";
 import { getApiUrl } from "@/lib/query-client";
 
 const prizes = [
-  { value: 10, label: "10 Coins", color: "#3B82F6" },
-  { value: 25, label: "25 Coins", color: "#22C55E" },
-  { value: 50, label: "50 Coins", color: "#EAB308" },
-  { value: 100, label: "100 Coins", color: "#8B5CF6" },
-  { value: 200, label: "200 Coins", color: "#EC4899" },
-  { value: 500, label: "500 Coins", color: "#F97316" },
+  { value: 10, label: "10 Points", color: "#3B82F6" },
+  { value: 25, label: "25 Points", color: "#22C55E" },
+  { value: 50, label: "50 Points", color: "#EAB308" },
+  { value: 100, label: "100 Points", color: "#8B5CF6" },
+  { value: 200, label: "200 Points", color: "#EC4899" },
+  { value: 500, label: "500 Points", color: "#F97316" },
 ];
 
 export default function LuckySpinScreen() {
@@ -138,7 +138,7 @@ export default function LuckySpinScreen() {
             Lucky Spin
           </ThemedText>
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Spin to win coins daily!
+            Spin to win points daily!
           </ThemedText>
         </Animated.View>
 
@@ -196,7 +196,7 @@ export default function LuckySpinScreen() {
           >
             <Feather name="award" size={24} color={theme.success} />
             <ThemedText type="h3" style={{ color: theme.success, marginLeft: Spacing.md }}>
-              You won {lastWin} coins!
+              You won {lastWin} points!
             </ThemedText>
           </Animated.View>
         ) : null}

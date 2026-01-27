@@ -135,13 +135,13 @@ export default function MarketScreen() {
         <Animated.View entering={FadeInDown.springify()}>
           <View style={styles.balanceCard}>
             <View style={[styles.coinIcon, { backgroundColor: theme.yellow + "20" }]}>
-              <Feather name="dollar-sign" size={24} color={theme.yellow} />
+              <Feather name="star" size={24} color={theme.yellow} />
             </View>
             <View>
               <ThemedText type="small" style={{ color: theme.textSecondary }}>
                 Available Balance
               </ThemedText>
-              <ThemedText type="h3">{(user?.coins || 0).toLocaleString()} coins</ThemedText>
+              <ThemedText type="h3">{(user?.coins || 0).toLocaleString()} points</ThemedText>
             </View>
           </View>
         </Animated.View>

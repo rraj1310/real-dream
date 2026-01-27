@@ -37,7 +37,7 @@ const defaultAwards: Award[] = [
   { name: "Goal Achiever", icon: "target", earned: "Nov 2023", color: "#3B82F6" },
 ];
 
-type TabType = "coins" | "awards";
+type TabType = "points" | "awards";
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -56,7 +56,7 @@ export default function WalletScreen() {
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabType>("coins");
+  const [activeTab, setActiveTab] = useState<TabType>("points");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -120,7 +120,7 @@ export default function WalletScreen() {
                 type="body"
                 style={{ color: theme.textSecondary }}
               >
-                Coins
+                Points
               </ThemedText>
             </View>
 
@@ -161,27 +161,27 @@ export default function WalletScreen() {
             style={[styles.tabContainer, { backgroundColor: theme.backgroundDefault }]}
           >
             <Pressable
-              onPress={() => setActiveTab("coins")}
+              onPress={() => setActiveTab("points")}
               style={[
                 styles.tab,
-                activeTab === "coins" ? styles.tabActive : null,
+                activeTab === "points" ? styles.tabActive : null,
               ]}
             >
               <Feather
-                name="dollar-sign"
+                name="star"
                 size={16}
-                color={activeTab === "coins" ? theme.text : theme.textSecondary}
+                color={activeTab === "points" ? theme.text : theme.textSecondary}
               />
               <ThemedText
                 type="small"
                 style={[
                   styles.tabText,
-                  activeTab === "coins"
+                  activeTab === "points"
                     ? styles.tabTextActive
                     : { color: theme.textSecondary },
                 ]}
               >
-                Coins
+                Points
               </ThemedText>
             </Pressable>
             <Pressable
@@ -211,7 +211,7 @@ export default function WalletScreen() {
           </View>
         </Animated.View>
 
-        {activeTab === "coins" ? (
+        {activeTab === "points" ? (
           <Animated.View entering={FadeInDown.delay(200).springify()}>
             <ThemedText type="body" style={styles.sectionTitle}>
               Recent Transactions
