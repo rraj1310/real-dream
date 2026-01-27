@@ -1,59 +1,288 @@
 import { Platform } from "react-native";
 
-const tintColorLight = "#3B82F6";
-const tintColorDark = "#60A5FA";
+export type ThemeType = {
+  id: string;
+  name: string;
+  isPremium: boolean;
+  price?: number;
+  colors: ThemeColors;
+};
+
+export type ThemeColors = {
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  buttonText: string;
+  tabIconDefault: string;
+  tabIconSelected: string;
+  link: string;
+  backgroundRoot: string;
+  backgroundDefault: string;
+  backgroundSecondary: string;
+  backgroundTertiary: string;
+  border: string;
+  borderLight: string;
+  success: string;
+  warning: string;
+  error: string;
+  blue: string;
+  purple: string;
+  yellow: string;
+  green: string;
+  pink: string;
+  orange: string;
+  indigo: string;
+  accent: string;
+  accentLight: string;
+  gradient: [string, string];
+};
+
+const lightTheme: ThemeColors = {
+  text: "#111827",
+  textSecondary: "#6B7280",
+  textMuted: "#9CA3AF",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#6B7280",
+  tabIconSelected: "#3B82F6",
+  link: "#3B82F6",
+  backgroundRoot: "#F3F4F6",
+  backgroundDefault: "#FFFFFF",
+  backgroundSecondary: "#F3F4F6",
+  backgroundTertiary: "#E5E7EB",
+  border: "#E5E7EB",
+  borderLight: "#F3F4F6",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#3B82F6",
+  purple: "#8B5CF6",
+  yellow: "#EAB308",
+  green: "#22C55E",
+  pink: "#EC4899",
+  orange: "#F97316",
+  indigo: "#6366F1",
+  accent: "#3B82F6",
+  accentLight: "#DBEAFE",
+  gradient: ["#3B82F6", "#8B5CF6"],
+};
+
+const darkTheme: ThemeColors = {
+  text: "#F3F4F6",
+  textSecondary: "#9CA3AF",
+  textMuted: "#6B7280",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#6B7280",
+  tabIconSelected: "#60A5FA",
+  link: "#60A5FA",
+  backgroundRoot: "#0F172A",
+  backgroundDefault: "#1E293B",
+  backgroundSecondary: "#334155",
+  backgroundTertiary: "#475569",
+  border: "#334155",
+  borderLight: "#1E293B",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#60A5FA",
+  purple: "#A78BFA",
+  yellow: "#FBBF24",
+  green: "#4ADE80",
+  pink: "#F472B6",
+  orange: "#FB923C",
+  indigo: "#818CF8",
+  accent: "#60A5FA",
+  accentLight: "#1E3A5F",
+  gradient: ["#3B82F6", "#8B5CF6"],
+};
+
+const oceanTheme: ThemeColors = {
+  text: "#0C4A6E",
+  textSecondary: "#0369A1",
+  textMuted: "#7DD3FC",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#38BDF8",
+  tabIconSelected: "#0284C7",
+  link: "#0284C7",
+  backgroundRoot: "#E0F2FE",
+  backgroundDefault: "#F0F9FF",
+  backgroundSecondary: "#BAE6FD",
+  backgroundTertiary: "#7DD3FC",
+  border: "#7DD3FC",
+  borderLight: "#BAE6FD",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#0EA5E9",
+  purple: "#8B5CF6",
+  yellow: "#EAB308",
+  green: "#22C55E",
+  pink: "#EC4899",
+  orange: "#F97316",
+  indigo: "#6366F1",
+  accent: "#0284C7",
+  accentLight: "#BAE6FD",
+  gradient: ["#0EA5E9", "#06B6D4"],
+};
+
+const sunsetTheme: ThemeColors = {
+  text: "#7C2D12",
+  textSecondary: "#C2410C",
+  textMuted: "#FDBA74",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#FB923C",
+  tabIconSelected: "#EA580C",
+  link: "#EA580C",
+  backgroundRoot: "#FFF7ED",
+  backgroundDefault: "#FFFBEB",
+  backgroundSecondary: "#FED7AA",
+  backgroundTertiary: "#FDBA74",
+  border: "#FDBA74",
+  borderLight: "#FED7AA",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#3B82F6",
+  purple: "#8B5CF6",
+  yellow: "#EAB308",
+  green: "#22C55E",
+  pink: "#EC4899",
+  orange: "#F97316",
+  indigo: "#6366F1",
+  accent: "#EA580C",
+  accentLight: "#FED7AA",
+  gradient: ["#F97316", "#EF4444"],
+};
+
+const forestTheme: ThemeColors = {
+  text: "#14532D",
+  textSecondary: "#166534",
+  textMuted: "#86EFAC",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#4ADE80",
+  tabIconSelected: "#16A34A",
+  link: "#16A34A",
+  backgroundRoot: "#F0FDF4",
+  backgroundDefault: "#ECFDF5",
+  backgroundSecondary: "#BBF7D0",
+  backgroundTertiary: "#86EFAC",
+  border: "#86EFAC",
+  borderLight: "#BBF7D0",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#3B82F6",
+  purple: "#8B5CF6",
+  yellow: "#EAB308",
+  green: "#22C55E",
+  pink: "#EC4899",
+  orange: "#F97316",
+  indigo: "#6366F1",
+  accent: "#16A34A",
+  accentLight: "#BBF7D0",
+  gradient: ["#22C55E", "#14B8A6"],
+};
+
+const lavenderTheme: ThemeColors = {
+  text: "#4C1D95",
+  textSecondary: "#6D28D9",
+  textMuted: "#C4B5FD",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#A78BFA",
+  tabIconSelected: "#7C3AED",
+  link: "#7C3AED",
+  backgroundRoot: "#F5F3FF",
+  backgroundDefault: "#FAF5FF",
+  backgroundSecondary: "#DDD6FE",
+  backgroundTertiary: "#C4B5FD",
+  border: "#C4B5FD",
+  borderLight: "#DDD6FE",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#3B82F6",
+  purple: "#8B5CF6",
+  yellow: "#EAB308",
+  green: "#22C55E",
+  pink: "#EC4899",
+  orange: "#F97316",
+  indigo: "#6366F1",
+  accent: "#7C3AED",
+  accentLight: "#DDD6FE",
+  gradient: ["#8B5CF6", "#EC4899"],
+};
+
+const roseTheme: ThemeColors = {
+  text: "#881337",
+  textSecondary: "#BE185D",
+  textMuted: "#FBCFE8",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#F472B6",
+  tabIconSelected: "#DB2777",
+  link: "#DB2777",
+  backgroundRoot: "#FDF2F8",
+  backgroundDefault: "#FFF1F2",
+  backgroundSecondary: "#FECDD3",
+  backgroundTertiary: "#FBCFE8",
+  border: "#FBCFE8",
+  borderLight: "#FECDD3",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#3B82F6",
+  purple: "#8B5CF6",
+  yellow: "#EAB308",
+  green: "#22C55E",
+  pink: "#EC4899",
+  orange: "#F97316",
+  indigo: "#6366F1",
+  accent: "#DB2777",
+  accentLight: "#FECDD3",
+  gradient: ["#EC4899", "#F43F5E"],
+};
+
+const midnightTheme: ThemeColors = {
+  text: "#E2E8F0",
+  textSecondary: "#94A3B8",
+  textMuted: "#475569",
+  buttonText: "#FFFFFF",
+  tabIconDefault: "#64748B",
+  tabIconSelected: "#818CF8",
+  link: "#818CF8",
+  backgroundRoot: "#020617",
+  backgroundDefault: "#0F172A",
+  backgroundSecondary: "#1E293B",
+  backgroundTertiary: "#334155",
+  border: "#334155",
+  borderLight: "#1E293B",
+  success: "#22C55E",
+  warning: "#F59E0B",
+  error: "#EF4444",
+  blue: "#60A5FA",
+  purple: "#A78BFA",
+  yellow: "#FBBF24",
+  green: "#4ADE80",
+  pink: "#F472B6",
+  orange: "#FB923C",
+  indigo: "#818CF8",
+  accent: "#818CF8",
+  accentLight: "#312E81",
+  gradient: ["#6366F1", "#8B5CF6"],
+};
+
+export const themes: ThemeType[] = [
+  { id: "light", name: "Light", isPremium: false, colors: lightTheme },
+  { id: "dark", name: "Dark", isPremium: false, colors: darkTheme },
+  { id: "ocean", name: "Ocean", isPremium: true, price: 99, colors: oceanTheme },
+  { id: "sunset", name: "Sunset", isPremium: true, price: 99, colors: sunsetTheme },
+  { id: "forest", name: "Forest", isPremium: true, price: 149, colors: forestTheme },
+  { id: "lavender", name: "Lavender", isPremium: true, price: 149, colors: lavenderTheme },
+  { id: "rose", name: "Rose", isPremium: true, price: 199, colors: roseTheme },
+  { id: "midnight", name: "Midnight", isPremium: true, price: 199, colors: midnightTheme },
+];
 
 export const Colors = {
-  light: {
-    text: "#111827",
-    textSecondary: "#6B7280",
-    textMuted: "#9CA3AF",
-    buttonText: "#FFFFFF",
-    tabIconDefault: "#6B7280",
-    tabIconSelected: tintColorLight,
-    link: "#3B82F6",
-    backgroundRoot: "#F9FAFB",
-    backgroundDefault: "#FFFFFF",
-    backgroundSecondary: "#F3F4F6",
-    backgroundTertiary: "#E5E7EB",
-    border: "#E5E7EB",
-    borderLight: "#F3F4F6",
-    success: "#22C55E",
-    warning: "#F59E0B",
-    error: "#EF4444",
-    blue: "#3B82F6",
-    purple: "#8B5CF6",
-    yellow: "#EAB308",
-    green: "#22C55E",
-    pink: "#EC4899",
-    orange: "#F97316",
-    indigo: "#6366F1",
-  },
-  dark: {
-    text: "#F3F4F6",
-    textSecondary: "#9CA3AF",
-    textMuted: "#6B7280",
-    buttonText: "#FFFFFF",
-    tabIconDefault: "#6B7280",
-    tabIconSelected: tintColorDark,
-    link: "#60A5FA",
-    backgroundRoot: "#111827",
-    backgroundDefault: "#1F2937",
-    backgroundSecondary: "#374151",
-    backgroundTertiary: "#4B5563",
-    border: "#374151",
-    borderLight: "#1F2937",
-    success: "#22C55E",
-    warning: "#F59E0B",
-    error: "#EF4444",
-    blue: "#60A5FA",
-    purple: "#A78BFA",
-    yellow: "#FBBF24",
-    green: "#4ADE80",
-    pink: "#F472B6",
-    orange: "#FB923C",
-    indigo: "#818CF8",
-  },
+  light: lightTheme,
+  dark: darkTheme,
 };
 
 export const Spacing = {
@@ -66,8 +295,8 @@ export const Spacing = {
   "3xl": 32,
   "4xl": 40,
   "5xl": 48,
-  inputHeight: 48,
-  buttonHeight: 52,
+  inputHeight: 52,
+  buttonHeight: 56,
 };
 
 export const BorderRadius = {
