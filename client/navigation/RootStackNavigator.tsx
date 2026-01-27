@@ -6,6 +6,7 @@ import MainTabNavigator from "@/navigation/MainTabNavigator";
 import SignInScreen from "@/screens/SignInScreen";
 import SignUpScreen from "@/screens/SignUpScreen";
 import ForgotPasswordScreen from "@/screens/ForgotPasswordScreen";
+import PhoneSignInScreen from "@/screens/PhoneSignInScreen";
 import WallOfFameScreen from "@/screens/WallOfFameScreen";
 import WalletScreen from "@/screens/WalletScreen";
 import ChatScreen from "@/screens/ChatScreen";
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
+  PhoneSignIn: undefined;
   MainTabs: undefined;
   WallOfFame: undefined;
   Wallet: undefined;
@@ -95,6 +97,11 @@ export default function RootStackNavigator() {
           <Stack.Screen
             name="ForgotPassword"
             component={ForgotPasswordScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="PhoneSignIn"
+            component={PhoneSignInScreen}
             options={{ headerShown: false }}
           />
         </>

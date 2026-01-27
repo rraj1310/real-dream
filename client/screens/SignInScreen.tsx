@@ -252,8 +252,9 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
             </Pressable>
 
             <Pressable
-              style={[styles.socialButton, styles.appleButton]}
-              testID="button-apple-signin"
+              onPress={() => navigation.navigate("PhoneSignIn")}
+              style={[styles.socialButton, styles.phoneButton]}
+              testID="button-phone-signin"
             >
               <Feather name="smartphone" size={24} color="#FFFFFF" />
             </Pressable>
@@ -416,8 +417,8 @@ const styles = StyleSheet.create({
   googleButton: {
     backgroundColor: "#EA4335",
   },
-  appleButton: {
-    backgroundColor: "#000000",
+  phoneButton: {
+    backgroundColor: "#22C55E",
   },
   facebookButton: {
     backgroundColor: "#1877F2",

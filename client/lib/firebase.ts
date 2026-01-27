@@ -9,8 +9,13 @@ import {
   signInWithCredential,
   OAuthProvider,
   signInWithPopup,
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  PhoneAuthProvider,
   Auth,
   UserCredential,
+  ConfirmationResult,
+  ApplicationVerifier,
 } from 'firebase/auth';
 import Constants from 'expo-constants';
 
@@ -105,4 +110,53 @@ export function onAuthStateChanged(callback: (user: any) => void) {
 
 export function getCurrentUser() {
   return auth.currentUser;
+}
+
+let confirmationResult: ConfirmationResult | null = null;
+let recaptchaVerifier: RecaptchaVerifier | null = null;
+
+export function setupRecaptcha(containerId: string): RecaptchaVerifier {
+  if (recaptchaVerifier) {
+    recaptchaVerifier.clear();
+  }
+  
+  recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+    size: 'invisible',
+    callback: () => {
+      console.log('reCAPTCHA verified');
+    },
+    'expired-callback': () => {
+      console.log('reCAPTCHA expired');
+    }
+  });
+  
+  return recaptchaVerifier;
+}
+
+export async function sendPhoneOTP(phoneNumber: string, appVerifier: ApplicationVerifier): Promise<ConfirmationResult> {
+  const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+  confirmationResult = result;
+  return result;
+}
+
+export async function verifyPhoneOTP(code: string): Promise<UserCredential | null> {
+  if (!confirmationResult) {
+    throw new Error('No confirmation result. Please request OTP first.');
+  }
+  
+  const result = await confirmationResult.confirm(code);
+  confirmationResult = null;
+  return result;
+}
+
+export function getRecaptchaVerifier(): RecaptchaVerifier | null {
+  return recaptchaVerifier;
+}
+
+export function clearRecaptcha() {
+  if (recaptchaVerifier) {
+    recaptchaVerifier.clear();
+    recaptchaVerifier = null;
+  }
+  confirmationResult = null;
 }

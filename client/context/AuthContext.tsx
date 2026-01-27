@@ -11,6 +11,10 @@ import {
   signInWithGooglePopup,
   signInWithFacebookPopup,
   onAuthStateChanged,
+  setupRecaptcha,
+  sendPhoneOTP,
+  verifyPhoneOTP,
+  clearRecaptcha,
 } from '../lib/firebase';
 
 export interface User {
@@ -41,6 +45,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   loginWithFacebook: () => Promise<{ success: boolean; error?: string }>;
+  sendPhoneCode: (phoneNumber: string, recaptchaContainerId: string) => Promise<{ success: boolean; error?: string }>;
+  verifyPhoneCode: (code: string, email?: string, username?: string) => Promise<{ success: boolean; error?: string }>;
   register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -321,6 +327,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sendPhoneCode = async (phoneNumber: string, recaptchaContainerId: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const appVerifier = setupRecaptcha(recaptchaContainerId);
+      await sendPhoneOTP(phoneNumber, appVerifier);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Send phone code error:', error);
+      clearRecaptcha();
+      let errorMessage = 'Failed to send verification code';
+      
+      if (error.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Invalid phone number format. Use +1234567890';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many requests. Please try again later.';
+      } else if (error.code === 'auth/quota-exceeded') {
+        errorMessage = 'SMS quota exceeded. Please try again later.';
+      }
+      
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const verifyPhoneCode = async (code: string, email?: string, username?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const userCredential = await verifyPhoneOTP(code);
+      if (!userCredential) {
+        return { success: false, error: 'Verification failed' };
+      }
+      
+      const firebaseToken = await userCredential.user.getIdToken();
+      const phoneNumber = userCredential.user.phoneNumber;
+      
+      const response = await fetch(new URL('/api/auth/firebase', apiUrl).toString(), {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${firebaseToken}`,
+        },
+        body: JSON.stringify({
+          email: email || `${phoneNumber?.replace(/\+/g, '')}@phone.realdream.app`,
+          fullName: username || 'Phone User',
+          firebaseUid: userCredential.user.uid,
+          authProvider: 'phone',
+          phoneNumber: phoneNumber,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        setToken(firebaseToken);
+        await AsyncStorage.setItem('auth_token', firebaseToken);
+        clearRecaptcha();
+        return { success: true };
+      } else {
+        const error = await response.json();
+        return { success: false, error: error.error || 'Failed to sync user' };
+      }
+    } catch (error: any) {
+      console.error('Verify phone code error:', error);
+      clearRecaptcha();
+      let errorMessage = 'Verification failed';
+      
+      if (error.code === 'auth/invalid-verification-code') {
+        errorMessage = 'Invalid verification code';
+      } else if (error.code === 'auth/code-expired') {
+        errorMessage = 'Verification code has expired. Please request a new one.';
+      }
+      
+      return { success: false, error: errorMessage };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -331,6 +410,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         loginWithGoogle,
         loginWithFacebook,
+        sendPhoneCode,
+        verifyPhoneCode,
         register,
         logout,
         refreshUser,
