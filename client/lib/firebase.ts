@@ -75,7 +75,7 @@ export async function signInWithGooglePopup(): Promise<UserCredential | null> {
     const result = await signInWithPopup(auth, provider);
     return result;
   } catch (error: any) {
-    console.error('Google sign-in error:', error);
+    console.error('Google sign-in error:', error?.code, error?.message);
     throw error;
   }
 }
