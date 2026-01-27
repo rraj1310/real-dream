@@ -6,10 +6,11 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 ## Tech Stack
 - **Frontend**: React Native + Expo (SDK 54)
 - **Backend**: Express.js with TypeScript
-- **State Management**: React Query (TanStack Query)
+- **State Management**: React Query (TanStack Query) + ThemeContext
 - **Navigation**: React Navigation 7 (stack + bottom tabs)
 - **UI Components**: Custom themed components with react-native-reanimated animations
 - **Icons**: @expo/vector-icons (Feather icons)
+- **Gradients**: expo-linear-gradient for UI elements
 
 ## Project Structure
 
@@ -24,9 +25,11 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 │   │   ├── HeaderTitle.tsx   # Custom header with app icon
 │   │   └── ...
 │   ├── constants/
-│   │   └── theme.ts          # Colors, spacing, typography, border radius
+│   │   └── theme.ts          # Colors, spacing, typography, border radius, themes
+│   ├── context/
+│   │   └── ThemeContext.tsx  # Theme state management with AsyncStorage
 │   ├── hooks/
-│   │   ├── useTheme.ts       # Theme/dark mode hook
+│   │   ├── useTheme.ts       # Theme hook (wraps ThemeContext)
 │   │   └── useScreenOptions.ts # Navigation header options
 │   ├── navigation/
 │   │   ├── RootStackNavigator.tsx    # Auth + main tabs
@@ -40,9 +43,13 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 │   │   ├── SignUpScreen.tsx          # Registration screen
 │   │   ├── MainMenuScreen.tsx        # Home with menu grid
 │   │   ├── MyRealDreamScreen.tsx     # Goals/dreams screen
-│   │   ├── ChampionsScreen.tsx       # Leaderboard
+│   │   ├── ChampionsScreen.tsx       # Leaderboard with medal modals
 │   │   ├── WallOfFameScreen.tsx      # Top achievers
+│   │   ├── MarketScreen.tsx          # Virtual marketplace
+│   │   ├── GalleryScreen.tsx         # Dream gallery showcase
+│   │   ├── NewsFeedScreen.tsx        # Community news feed
 │   │   ├── ProfileScreen.tsx         # User profile
+│   │   ├── ThemeScreen.tsx           # Theme selection (free + premium)
 │   │   ├── SettingsScreen.tsx        # App settings
 │   │   └── WalletScreen.tsx          # Coins/awards wallet
 │   └── lib/
@@ -58,15 +65,22 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 
 ## Key Features
 
+### Theme System
+- **Free Themes**: Light and Dark modes
+- **Premium Themes**: Ocean (99 coins), Sunset (99 coins), Forest (149 coins), Lavender (149 coins), Rose (199 coins), Midnight (199 coins)
+- Theme persistence with AsyncStorage
+- Purchase modal with coin deduction
+- Each theme includes unique gradient colors and accent tones
+
 ### Authentication
 - Sign In / Sign Up screens with animated logo
 - Password visibility toggle
 - Navigates to main app after auth
 
 ### Main Menu (Home Tab)
-- Welcome message
+- Welcome message with coin balance display
 - 6 menu items in a grid: My RealDream, Social, Champions, Market, Gallery, News Feed
-- Color-coded icons for each category
+- Color-coded gradient icons for each category
 
 ### My RealDream
 - Three dream types: Personal, Challenge, Group
@@ -74,18 +88,35 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Start New RealDream button
 
 ### Champions
-- Hall of Fame / Wall of Fame links
-- Top Champions leaderboard (gold, silver, bronze)
+- Hall of Fame / Wall of Fame links with gradient icons
+- Top Champions leaderboard (gold, silver, bronze medals)
 - Rising Stars section
+- **Interactive medal modals** showing champion stats (Dreams, Points, Awards)
 
 ### Wall of Fame
 - Period tabs: Monthly, Yearly, All Time
 - Legends cards with stats (dreams, achievements, points)
 - Hall of Famers list with year badges
 
+### Market
+- Available balance display
+- Category filter pills (All, Badges, Customization, Boosters, Themes, Stickers)
+- Market items with gradient icons and prices
+
+### Gallery
+- Dream gallery with community achievements
+- Gradient cards with likes and categories
+- Beautiful visual showcase
+
+### News Feed
+- Community posts with avatars
+- Achievement badges on posts
+- Like, comment, share interactions
+
 ### Profile
 - User avatar with gradient background
 - Connections and Achievements links
+- Theme & Appearance access to ThemeScreen
 - My Orders section (Purchase, Wallet)
 - Account actions (Edit, Delete)
 
@@ -102,7 +133,7 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 
 ## Design System
 
-### Colors
+### Theme Colors (Light Mode Default)
 - **Primary Blue**: #3B82F6
 - **Purple**: #8B5CF6 (secondary accent)
 - **Yellow/Gold**: #EAB308 (achievements)
@@ -117,9 +148,10 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 
 ### Components
 - Cards with press animation (scale 0.98)
+- LinearGradient icons and avatars
 - Pill-shaped primary buttons
-- Gradient avatars (blue to purple)
 - Bottom tab navigation with blur effect
+- Interactive modals for champions and purchases
 
 ## Running the App
 
@@ -132,8 +164,10 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Mobile: Scan QR code with Expo Go app
 
 ## Recent Changes
-- January 2026: Complete redesign based on Figma export
-- Implemented all core screens from design
-- Added animated components with haptic feedback
-- Set up proper navigation structure
-- Created comprehensive design guidelines
+- January 2026: Added comprehensive theme system with 8 themes (2 free + 6 premium)
+- Added premium theme purchase functionality with coins
+- Enhanced UI with LinearGradient components throughout
+- Added interactive medal/trophy modals on Champions screen
+- Created Market, Gallery, and NewsFeed screens
+- Updated navigation to match PDF outline
+- Improved visual design with gradient backgrounds and animations
