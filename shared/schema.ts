@@ -88,6 +88,7 @@ export const dreams = pgTable("dreams", {
   type: dreamTypeEnum("type").notNull().default("personal"),
   privacy: dreamPrivacyEnum("privacy").default("public"),
   imageUrl: text("image_url"),
+  startDate: timestamp("start_date"),
   targetDate: timestamp("target_date"),
   progress: integer("progress").default(0),
   isCompleted: boolean("is_completed").default(false),
@@ -110,6 +111,24 @@ export const dreamMembers = pgTable("dream_members", {
     .references(() => users.id, { onDelete: "cascade" }),
   role: text("role").default("member"),
   joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+export const dreamTasks = pgTable("dream_tasks", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  dreamId: varchar("dream_id")
+    .notNull()
+    .references(() => dreams.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  dueDate: timestamp("due_date"),
+  reminderDate: timestamp("reminder_date"),
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const connections = pgTable("connections", {
@@ -307,6 +326,14 @@ export const dreamsRelations = relations(dreams, ({ one, many }) => ({
     references: [users.id],
   }),
   members: many(dreamMembers),
+  tasks: many(dreamTasks),
+}));
+
+export const dreamTasksRelations = relations(dreamTasks, ({ one }) => ({
+  dream: one(dreams, {
+    fields: [dreamTasks.dreamId],
+    references: [dreams.id],
+  }),
 }));
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -343,6 +370,7 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Dream = typeof dreams.$inferSelect;
+export type DreamTask = typeof dreamTasks.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
