@@ -1,4 +1,5 @@
 import React from "react";
+import { ActivityIndicator, View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import MainTabNavigator from "@/navigation/MainTabNavigator";
@@ -7,6 +8,8 @@ import SignUpScreen from "@/screens/SignUpScreen";
 import WallOfFameScreen from "@/screens/WallOfFameScreen";
 import WalletScreen from "@/screens/WalletScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
+import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/hooks/useTheme";
 
 export type RootStackParamList = {
   SignIn: undefined;
@@ -29,34 +32,51 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
+  const { isAuthenticated, isLoading } = useAuth();
+  const { theme } = useTheme();
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.backgroundDefault }}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen
-        name="SignIn"
-        component={SignInScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="SignUp"
-        component={SignUpScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="MainTabs"
-        component={MainTabNavigator}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="WallOfFame"
-        component={WallOfFameScreen}
-        options={{ headerTitle: "Wall of Fame" }}
-      />
-      <Stack.Screen
-        name="Wallet"
-        component={WalletScreen}
-        options={{ headerTitle: "Wallet" }}
-      />
+      {isAuthenticated ? (
+        <>
+          <Stack.Screen
+            name="MainTabs"
+            component={MainTabNavigator}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="WallOfFame"
+            component={WallOfFameScreen}
+            options={{ headerTitle: "Wall of Fame" }}
+          />
+          <Stack.Screen
+            name="Wallet"
+            component={WalletScreen}
+            options={{ headerTitle: "Wallet" }}
+          />
+        </>
+      ) : (
+        <>
+          <Stack.Screen
+            name="SignIn"
+            component={SignInScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="SignUp"
+            component={SignUpScreen}
+            options={{ headerShown: false }}
+          />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

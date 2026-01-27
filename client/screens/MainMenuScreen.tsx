@@ -17,6 +17,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Card } from "@/components/Card";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
 
 type MenuItemType = {
@@ -122,7 +123,9 @@ export default function MainMenuScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
-  const { theme, userCoins } = useTheme();
+  const { theme } = useTheme();
+  const { user } = useAuth();
+  const userCoins = user?.coins || 0;
 
   return (
     <ThemedView style={styles.container}>
@@ -142,7 +145,7 @@ export default function MainMenuScreen() {
           <View style={styles.welcomeContainer}>
             <View style={styles.welcomeText}>
               <ThemedText type="h2" style={styles.welcomeTitle}>
-                Welcome back!
+                Welcome{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ' back'}!
               </ThemedText>
               <ThemedText
                 type="body"

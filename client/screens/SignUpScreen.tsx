@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, Image } from "react-native";
+import { View, StyleSheet, Pressable, Image, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -10,6 +10,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTheme } from "@/hooks/useTheme";
+import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius, Colors } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
@@ -20,15 +21,47 @@ type SignUpScreenProps = {
 export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { register } = useAuth();
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
+    if (!fullName || !username || !email || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+    
+    setIsLoading(true);
+    setError("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    navigation.replace("MainTabs");
+    
+    const result = await register({
+      email: email.trim().toLowerCase(),
+      username: username.trim().toLowerCase(),
+      password,
+      fullName: fullName.trim(),
+    });
+    setIsLoading(false);
+    
+    if (result.success) {
+      navigation.replace("MainTabs");
+    } else {
+      setError(result.error || "Registration failed");
+    }
   };
 
   return (
@@ -80,6 +113,15 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
           />
 
           <Input
+            label="Username"
+            placeholder="Choose a username"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+            testID="input-username"
+          />
+
+          <Input
             label="Email"
             placeholder="Enter your email"
             value={email}
@@ -119,8 +161,14 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             testID="input-confirm-password"
           />
 
-          <Button onPress={handleSignUp} testID="button-signup">
-            Create Account
+          {error ? (
+            <ThemedText type="small" style={styles.errorText}>
+              {error}
+            </ThemedText>
+          ) : null}
+
+          <Button onPress={handleSignUp} disabled={isLoading} testID="button-signup">
+            {isLoading ? <ActivityIndicator color="#FFFFFF" size="small" /> : "Create Account"}
           </Button>
 
           <View style={styles.signInContainer}>
@@ -184,5 +232,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginTop: Spacing.sm,
+  },
+  errorText: {
+    color: "#EF4444",
+    textAlign: "center",
   },
 });
