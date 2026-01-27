@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, Image, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Pressable, ActivityIndicator, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -9,13 +9,12 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
-import { Spacing, BorderRadius, Colors } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 type SignInScreenProps = {
@@ -36,10 +35,10 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const logoScale = useSharedValue(1);
+  const buttonScale = useSharedValue(1);
 
-  const logoAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: logoScale.value }],
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
   }));
 
   const handleSignIn = async () => {
@@ -106,71 +105,71 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
     navigation.navigate("ForgotPassword" as any);
   };
 
-  const handleLogoPress = () => {
-    logoScale.value = withSpring(0.95, { damping: 15 });
-    setTimeout(() => {
-      logoScale.value = withSpring(1, { damping: 15 });
-    }, 100);
+  const handleButtonPressIn = () => {
+    buttonScale.value = withSpring(0.97, { damping: 15 });
+  };
+
+  const handleButtonPressOut = () => {
+    buttonScale.value = withSpring(1, { damping: 15 });
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top + Spacing["3xl"],
-          paddingBottom: insets.bottom + Spacing.xl,
-          backgroundColor: Colors.light.blue,
-        },
-      ]}
-    >
-      <View style={styles.gradientOverlay} />
+    <View style={styles.container}>
+      <LinearGradient
+        colors={["#0D0B1E", "#1A1040", "#2D1B4E", "#0D0B1E"]}
+        locations={[0, 0.3, 0.6, 1]}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <View style={styles.starsOverlay}>
+        <View style={[styles.star, { top: "10%", left: "20%" }]} />
+        <View style={[styles.star, { top: "15%", left: "80%" }]} />
+        <View style={[styles.star, { top: "25%", left: "60%" }]} />
+        <View style={[styles.star, { top: "8%", left: "40%" }]} />
+        <View style={[styles.star, { top: "20%", left: "10%" }]} />
+        <View style={[styles.starLarge, { top: "12%", left: "70%" }]} />
+        <View style={[styles.starLarge, { top: "18%", left: "30%" }]} />
+      </View>
 
-      <View style={styles.content}>
-        <AnimatedPressable
-          onPress={handleLogoPress}
-          style={[styles.logoContainer, logoAnimatedStyle]}
-        >
-          <Image
-            source={require("../../assets/images/icon.png")}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </AnimatedPressable>
+      <View
+        style={[
+          styles.content,
+          {
+            paddingTop: insets.top + Spacing["3xl"],
+            paddingBottom: insets.bottom + Spacing.xl,
+          },
+        ]}
+      >
+        <View style={styles.headerSection}>
+          <ThemedText type="h1" style={styles.title}>
+            Real Dream
+          </ThemedText>
+          <ThemedText type="body" style={styles.subtitle}>
+            Explore your subconscious
+          </ThemedText>
+        </View>
 
-        <ThemedText
-          type="h1"
-          style={[styles.title, { color: "#FFFFFF" }]}
-        >
-          Real Dream
-        </ThemedText>
-        <ThemedText
-          type="body"
-          style={[styles.subtitle, { color: "rgba(255,255,255,0.8)" }]}
-        >
-          Sign in to your account
-        </ThemedText>
+        <View style={styles.formSection}>
+          <View style={styles.glassInput}>
+            <Feather name="mail" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter your email"
+              placeholderTextColor="#8B7FC7"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              testID="input-email"
+            />
+          </View>
 
-        <View
-          style={[
-            styles.formContainer,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            testID="input-email"
-          />
-
-          <View style={styles.passwordContainer}>
-            <Input
-              label="Password"
+          <View style={styles.glassInput}>
+            <Feather name="lock" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
               placeholder="Enter your password"
+              placeholderTextColor="#8B7FC7"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -184,13 +183,13 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
               <Feather
                 name={showPassword ? "eye-off" : "eye"}
                 size={20}
-                color={theme.textMuted}
+                color="#8B7FC7"
               />
             </Pressable>
           </View>
 
           <Pressable style={styles.forgotButton} onPress={handleForgotPassword}>
-            <ThemedText type="small" style={{ color: theme.link }}>
+            <ThemedText type="small" style={styles.forgotText}>
               Forgot Password?
             </ThemedText>
           </Pressable>
@@ -201,65 +200,79 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
             </ThemedText>
           ) : null}
 
-          <Button onPress={handleSignIn} disabled={isLoading} testID="button-signin">
-            {isLoading ? <ActivityIndicator color="#FFFFFF" size="small" /> : "Sign In"}
-          </Button>
+          <AnimatedPressable
+            onPress={handleSignIn}
+            onPressIn={handleButtonPressIn}
+            onPressOut={handleButtonPressOut}
+            disabled={isLoading}
+            style={buttonAnimatedStyle}
+            testID="button-signin"
+          >
+            <LinearGradient
+              colors={["#7C3AED", "#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.loginButton}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <ThemedText type="body" style={styles.loginButtonText}>
+                  Log In
+                </ThemedText>
+              )}
+            </LinearGradient>
+          </AnimatedPressable>
 
           <View style={styles.divider}>
-            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-            <ThemedText type="small" style={{ color: theme.textMuted, paddingHorizontal: Spacing.md }}>
-              or continue with
+            <View style={styles.dividerLine} />
+            <ThemedText type="small" style={styles.dividerText}>
+              Or continue with
             </ThemedText>
-            <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
+            <View style={styles.dividerLine} />
           </View>
 
           <View style={styles.socialButtons}>
             <Pressable
               onPress={handleGoogleSignIn}
-              style={[styles.socialButton, { backgroundColor: theme.backgroundSecondary }]}
+              style={[styles.socialButton, styles.googleButton]}
               disabled={isGoogleLoading}
               testID="button-google-signin"
             >
               {isGoogleLoading ? (
-                <ActivityIndicator color={theme.text} size="small" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <>
-                  <Feather name="mail" size={20} color="#EA4335" />
-                  <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.sm }}>
-                    Google
-                  </ThemedText>
-                </>
+                <ThemedText type="h3" style={styles.socialIcon}>G</ThemedText>
               )}
             </Pressable>
 
             <Pressable
+              style={[styles.socialButton, styles.appleButton]}
+              testID="button-apple-signin"
+            >
+              <Feather name="smartphone" size={24} color="#FFFFFF" />
+            </Pressable>
+
+            <Pressable
               onPress={handleFacebookSignIn}
-              style={[styles.socialButton, { backgroundColor: theme.backgroundSecondary }]}
+              style={[styles.socialButton, styles.facebookButton]}
               disabled={isFacebookLoading}
               testID="button-facebook-signin"
             >
               {isFacebookLoading ? (
-                <ActivityIndicator color={theme.text} size="small" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <>
-                  <Feather name="facebook" size={20} color="#1877F2" />
-                  <ThemedText type="small" style={{ color: theme.text, marginLeft: Spacing.sm }}>
-                    Facebook
-                  </ThemedText>
-                </>
+                <Feather name="facebook" size={24} color="#FFFFFF" />
               )}
             </Pressable>
           </View>
 
           <View style={styles.signUpContainer}>
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+            <ThemedText type="small" style={styles.signUpText}>
               Don't have an account?{" "}
             </ThemedText>
             <Pressable onPress={() => navigation.navigate("SignUp")}>
-              <ThemedText
-                type="small"
-                style={{ color: theme.link, fontWeight: "600" }}
-              >
+              <ThemedText type="small" style={styles.signUpLink}>
                 Sign Up
               </ThemedText>
             </Pressable>
@@ -273,79 +286,146 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0D0B1E",
   },
-  gradientOverlay: {
+  starsOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "transparent",
+    zIndex: 1,
+  },
+  star: {
+    position: "absolute",
+    width: 2,
+    height: 2,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 1,
+    opacity: 0.6,
+  },
+  starLarge: {
+    position: "absolute",
+    width: 3,
+    height: 3,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 1.5,
+    opacity: 0.8,
   },
   content: {
     flex: 1,
     paddingHorizontal: Spacing.xl,
+    zIndex: 2,
+  },
+  headerSection: {
     alignItems: "center",
-  },
-  logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: BorderRadius.xl,
-    overflow: "hidden",
-    marginBottom: Spacing.lg,
-  },
-  logoImage: {
-    width: "100%",
-    height: "100%",
-  },
-  title: {
-    marginBottom: Spacing.xs,
-  },
-  subtitle: {
+    marginTop: Spacing["3xl"],
     marginBottom: Spacing["3xl"],
   },
-  formContainer: {
-    width: "100%",
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
+  title: {
+    color: "#C4B5FD",
+    fontWeight: "700",
+    fontStyle: "italic",
+    marginBottom: Spacing.sm,
+  },
+  subtitle: {
+    color: "#8B7FC7",
+  },
+  formSection: {
+    flex: 1,
+    justifyContent: "center",
     gap: Spacing.lg,
   },
-  passwordContainer: {
-    position: "relative",
+  glassInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: "rgba(139, 127, 199, 0.3)",
+    paddingHorizontal: Spacing.lg,
+    height: 56,
+  },
+  inputIcon: {
+    marginRight: Spacing.md,
+  },
+  textInput: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 16,
+    height: "100%",
   },
   eyeButton: {
-    position: "absolute",
-    right: Spacing.lg,
-    top: 38,
     padding: Spacing.xs,
   },
   forgotButton: {
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
+    marginTop: -Spacing.sm,
   },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: Spacing.sm,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  socialButtons: {
-    flexDirection: "row",
-    gap: Spacing.md,
-  },
-  socialButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.sm,
-  },
-  signUpContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: Spacing.sm,
+  forgotText: {
+    color: "#C4B5FD",
+    fontWeight: "500",
   },
   errorText: {
     color: "#EF4444",
     textAlign: "center",
+  },
+  loginButton: {
+    height: 56,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 18,
+  },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: Spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(139, 127, 199, 0.3)",
+  },
+  dividerText: {
+    color: "#8B7FC7",
+    paddingHorizontal: Spacing.md,
+  },
+  socialButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: Spacing.lg,
+  },
+  socialButton: {
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  googleButton: {
+    backgroundColor: "#EA4335",
+  },
+  appleButton: {
+    backgroundColor: "#000000",
+  },
+  facebookButton: {
+    backgroundColor: "#1877F2",
+  },
+  socialIcon: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  signUpContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: Spacing.xl,
+  },
+  signUpText: {
+    color: "#8B7FC7",
+  },
+  signUpLink: {
+    color: "#C4B5FD",
+    fontWeight: "600",
   },
 });

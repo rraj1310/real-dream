@@ -1,22 +1,28 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, Image, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Pressable, ActivityIndicator, TextInput, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
-import { Spacing, BorderRadius, Colors } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 type SignUpScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "SignUp">;
 };
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   const insets = useSafeAreaInsets();
@@ -30,6 +36,12 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const buttonScale = useSharedValue(1);
+
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
 
   const handleSignUp = async () => {
     if (!fullName || !username || !email || !password) {
@@ -64,77 +76,96 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
     }
   };
 
+  const handleButtonPressIn = () => {
+    buttonScale.value = withSpring(0.97, { damping: 15 });
+  };
+
+  const handleButtonPressOut = () => {
+    buttonScale.value = withSpring(1, { damping: 15 });
+  };
+
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top + Spacing.xl,
-          backgroundColor: Colors.light.blue,
-        },
-      ]}
-    >
+    <View style={styles.container}>
+      <LinearGradient
+        colors={["#0D0B1E", "#1A1040", "#2D1B4E", "#0D0B1E"]}
+        locations={[0, 0.3, 0.6, 1]}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <View style={styles.starsOverlay}>
+        <View style={[styles.star, { top: "5%", left: "20%" }]} />
+        <View style={[styles.star, { top: "10%", left: "80%" }]} />
+        <View style={[styles.star, { top: "15%", left: "60%" }]} />
+        <View style={[styles.star, { top: "3%", left: "40%" }]} />
+        <View style={[styles.starLarge, { top: "8%", left: "70%" }]} />
+      </View>
+
       <KeyboardAwareScrollViewCompat
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: insets.bottom + Spacing.xl },
+          {
+            paddingTop: insets.top + Spacing["2xl"],
+            paddingBottom: insets.bottom + Spacing.xl,
+          },
         ]}
       >
-        <View style={styles.header}>
-          <Image
-            source={require("../../assets/images/icon.png")}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-          <ThemedText type="h2" style={[styles.title, { color: "#FFFFFF" }]}>
+        <View style={styles.headerSection}>
+          <ThemedText type="h1" style={styles.title}>
             Create Account
           </ThemedText>
-          <ThemedText
-            type="body"
-            style={[styles.subtitle, { color: "rgba(255,255,255,0.8)" }]}
-          >
+          <ThemedText type="body" style={styles.subtitle}>
             Join Real Dream today
           </ThemedText>
         </View>
 
-        <View
-          style={[
-            styles.formContainer,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          <Input
-            label="Full Name"
-            placeholder="Enter your full name"
-            value={fullName}
-            onChangeText={setFullName}
-            testID="input-fullname"
-          />
+        <View style={styles.formSection}>
+          <View style={styles.glassInput}>
+            <Feather name="user" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Full Name"
+              placeholderTextColor="#8B7FC7"
+              value={fullName}
+              onChangeText={setFullName}
+              autoCapitalize="words"
+              testID="input-fullname"
+            />
+          </View>
 
-          <Input
-            label="Username"
-            placeholder="Choose a username"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-            testID="input-username"
-          />
+          <View style={styles.glassInput}>
+            <Feather name="at-sign" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Username"
+              placeholderTextColor="#8B7FC7"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              testID="input-username"
+            />
+          </View>
 
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            testID="input-email"
-          />
+          <View style={styles.glassInput}>
+            <Feather name="mail" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Email"
+              placeholderTextColor="#8B7FC7"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              testID="input-email"
+            />
+          </View>
 
-          <View style={styles.passwordContainer}>
-            <Input
-              label="Password"
-              placeholder="Create a password"
+          <View style={styles.glassInput}>
+            <Feather name="lock" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Password"
+              placeholderTextColor="#8B7FC7"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -147,19 +178,23 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
               <Feather
                 name={showPassword ? "eye-off" : "eye"}
                 size={20}
-                color={theme.textMuted}
+                color="#8B7FC7"
               />
             </Pressable>
           </View>
 
-          <Input
-            label="Confirm Password"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry={!showPassword}
-            testID="input-confirm-password"
-          />
+          <View style={styles.glassInput}>
+            <Feather name="lock" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Confirm Password"
+              placeholderTextColor="#8B7FC7"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showPassword}
+              testID="input-confirm-password"
+            />
+          </View>
 
           {error ? (
             <ThemedText type="small" style={styles.errorText}>
@@ -167,19 +202,36 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             </ThemedText>
           ) : null}
 
-          <Button onPress={handleSignUp} disabled={isLoading} testID="button-signup">
-            {isLoading ? <ActivityIndicator color="#FFFFFF" size="small" /> : "Create Account"}
-          </Button>
+          <AnimatedPressable
+            onPress={handleSignUp}
+            onPressIn={handleButtonPressIn}
+            onPressOut={handleButtonPressOut}
+            disabled={isLoading}
+            style={buttonAnimatedStyle}
+            testID="button-signup"
+          >
+            <LinearGradient
+              colors={["#7C3AED", "#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.signUpButton}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <ThemedText type="body" style={styles.signUpButtonText}>
+                  Sign Up
+                </ThemedText>
+              )}
+            </LinearGradient>
+          </AnimatedPressable>
 
           <View style={styles.signInContainer}>
-            <ThemedText type="small" style={{ color: theme.textSecondary }}>
+            <ThemedText type="small" style={styles.signInText}>
               Already have an account?{" "}
             </ThemedText>
-            <Pressable onPress={() => navigation.goBack()}>
-              <ThemedText
-                type="small"
-                style={{ color: theme.link, fontWeight: "600" }}
-              >
+            <Pressable onPress={() => navigation.navigate("SignIn")}>
+              <ThemedText type="small" style={styles.signInLink}>
                 Sign In
               </ThemedText>
             </Pressable>
@@ -193,48 +245,99 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0D0B1E",
   },
   scrollView: {
     flex: 1,
+    zIndex: 2,
   },
   scrollContent: {
     paddingHorizontal: Spacing.xl,
   },
-  header: {
-    alignItems: "center",
-    marginBottom: Spacing.xl,
+  starsOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
   },
-  logoImage: {
-    width: 80,
-    height: 80,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.lg,
+  star: {
+    position: "absolute",
+    width: 2,
+    height: 2,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 1,
+    opacity: 0.6,
+  },
+  starLarge: {
+    position: "absolute",
+    width: 3,
+    height: 3,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 1.5,
+    opacity: 0.8,
+  },
+  headerSection: {
+    alignItems: "center",
+    marginBottom: Spacing["2xl"],
   },
   title: {
-    marginBottom: Spacing.xs,
+    color: "#C4B5FD",
+    fontWeight: "700",
+    fontStyle: "italic",
+    marginBottom: Spacing.sm,
   },
-  subtitle: {},
-  formContainer: {
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
+  subtitle: {
+    color: "#8B7FC7",
+  },
+  formSection: {
     gap: Spacing.lg,
   },
-  passwordContainer: {
-    position: "relative",
+  glassInput: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: "rgba(139, 127, 199, 0.3)",
+    paddingHorizontal: Spacing.lg,
+    height: 56,
+  },
+  inputIcon: {
+    marginRight: Spacing.md,
+  },
+  textInput: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 16,
+    height: "100%",
   },
   eyeButton: {
-    position: "absolute",
-    right: Spacing.lg,
-    top: 38,
     padding: Spacing.xs,
-  },
-  signInContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: Spacing.sm,
   },
   errorText: {
     color: "#EF4444",
     textAlign: "center",
+  },
+  signUpButton: {
+    height: 56,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: Spacing.sm,
+  },
+  signUpButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 18,
+  },
+  signInContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: Spacing.lg,
+  },
+  signInText: {
+    color: "#8B7FC7",
+  },
+  signInLink: {
+    color: "#C4B5FD",
+    fontWeight: "600",
   },
 });

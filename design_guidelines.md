@@ -12,32 +12,36 @@ Real Dream is a goal-tracking and dream achievement mobile app that helps users 
 
 ## Color Palette
 
-### Primary Colors
-- **Primary Blue**: `#3B82F6` (blue-500) - Main accent color
-- **Primary Blue Dark**: `#2563EB` (blue-600) - Buttons, active states
-- **Primary Blue Light**: `#DBEAFE` (blue-100) - Light backgrounds
+### Default Theme: Galaxy (Purple/Dark)
+The Galaxy theme is the **default theme** for all screens. It features a dark purple gradient background with a cosmic/space aesthetic.
 
-### Secondary Colors
-- **Purple**: `#8B5CF6` (purple-500) - Secondary accent, group dreams
-- **Yellow/Gold**: `#EAB308` (yellow-500) - Champions, achievements, gold rank
-- **Green**: `#22C55E` (green-500) - Success, completed goals
-- **Pink**: `#EC4899` (pink-500) - Gallery, creative elements
-- **Orange**: `#F97316` (orange-500) - Warnings, sunset theme
-- **Indigo**: `#6366F1` (indigo-500) - News feed
+#### Galaxy Theme Colors
+- **Background Root**: `#0D0B1E` - Deep space purple
+- **Background Default**: `#1A1533` - Dark purple
+- **Background Secondary**: `#2D2752` - Medium purple (glass effects)
+- **Text Primary**: `#FFFFFF` - White
+- **Text Secondary**: `#C4B5FD` - Light purple
+- **Text Muted**: `#8B7FC7` - Muted purple
+- **Accent**: `#A78BFA` - Bright purple
+- **Gradient Primary**: `#7C3AED` → `#A855F7` → `#EC4899` - Purple to pink
 
-### Neutral Colors
-- **Background Light**: `#F9FAFB` (gray-50) - Main screen background
-- **Background White**: `#FFFFFF` - Cards, modals
-- **Text Primary**: `#111827` (gray-900) - Headings
-- **Text Secondary**: `#6B7280` (gray-500) - Descriptions, labels
-- **Text Muted**: `#9CA3AF` (gray-400) - Placeholder, disabled
-- **Border**: `#E5E7EB` (gray-200) - Card borders, dividers
+#### Galaxy Theme UI Elements
+- **Glass Input Fields**: `rgba(45, 39, 82, 0.6)` with subtle border `rgba(139, 127, 199, 0.3)`
+- **Gradient Buttons**: Linear gradient from purple (#7C3AED) to pink (#EC4899)
+- **Star Decorations**: Small white dots scattered across backgrounds
+- **Social Buttons**: Google (red #EA4335), Apple (black), Facebook (blue #1877F2)
 
-### Dark Mode Colors
-- **Background Dark**: `#1F2937` (gray-800) - Main background
-- **Card Dark**: `#374151` (gray-700) - Card backgrounds
-- **Text Dark Primary**: `#F3F4F6` (gray-100) - Main text
-- **Text Dark Secondary**: `#9CA3AF` (gray-400) - Secondary text
+### Alternative Themes
+- **Light Theme**: Traditional light mode with white backgrounds
+- **Dark Theme**: Standard dark mode with gray backgrounds
+- **Premium Themes**: Ocean, Sunset, Forest, Lavender, Rose, Midnight (purchased with coins)
+
+### Accent Colors
+- **Purple**: `#A78BFA` - Primary accent in Galaxy theme
+- **Yellow/Gold**: `#FBBF24` - Champions, achievements, gold rank
+- **Green**: `#22C55E` - Success, completed goals
+- **Pink**: `#EC4899` - Gallery, creative elements
+- **Blue**: `#60A5FA` - Links, secondary actions
 
 ## Typography
 
