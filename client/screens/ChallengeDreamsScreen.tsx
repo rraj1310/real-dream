@@ -28,9 +28,16 @@ type Dream = {
 };
 
 function DreamCard({ dream, index }: { dream: Dream; index: number }) {
+  const navigation = useNavigation<any>();
+  
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("DreamDetail", { dreamId: dream.id });
+  };
+  
   return (
     <Animated.View entering={FadeInDown.delay(index * 100).springify()}>
-      <Card style={styles.dreamCard}>
+      <Card style={styles.dreamCard} onPress={handlePress} testID={`dream-card-${dream.id}`}>
         <View style={styles.dreamHeader}>
           <View style={[styles.dreamIcon, { backgroundColor: "#EAB308" }]}>
             <Feather name="award" size={24} color="#FFFFFF" />
@@ -57,7 +64,9 @@ function DreamCard({ dream, index }: { dream: Dream; index: number }) {
             <View style={styles.completedBadge}>
               <Feather name="check" size={16} color="#16A34A" />
             </View>
-          ) : null}
+          ) : (
+            <Feather name="chevron-right" size={20} color="#8B7FC7" />
+          )}
         </View>
       </Card>
     </Animated.View>

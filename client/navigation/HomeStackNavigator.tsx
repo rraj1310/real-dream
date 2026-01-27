@@ -15,6 +15,7 @@ import PersonalDreamsScreen from "@/screens/PersonalDreamsScreen";
 import GroupDreamsScreen from "@/screens/GroupDreamsScreen";
 import ChallengeDreamsScreen from "@/screens/ChallengeDreamsScreen";
 import CreateDreamScreen from "@/screens/CreateDreamScreen";
+import DreamDetailScreen from "@/screens/DreamDetailScreen";
 import { HeaderTitle, HeaderIcons } from "@/components/HeaderTitle";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 
@@ -33,6 +34,7 @@ export type HomeStackParamList = {
   GroupDreams: undefined;
   ChallengeDreams: undefined;
   CreateDream: { type?: "personal" | "group" | "challenge" };
+  DreamDetail: { dreamId: string };
 };
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
@@ -139,6 +141,13 @@ export default function HomeStackNavigator() {
         component={CreateDreamScreen}
         options={{
           headerTitle: "CREATE DREAM",
+        }}
+      />
+      <Stack.Screen
+        name="DreamDetail"
+        component={DreamDetailScreen}
+        options={{
+          headerTitle: "DREAM DETAILS",
         }}
       />
     </Stack.Navigator>
