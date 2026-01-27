@@ -39,22 +39,14 @@ export default function ConnectionsScreen() {
   const fetchConnections = useCallback(async () => {
     if (!token) return;
     try {
-      const [followersRes, followingRes] = await Promise.all([
-        fetch(new URL('/api/connections/followers', getApiUrl()).toString(), {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(new URL('/api/connections/following', getApiUrl()).toString(), {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      const response = await fetch(new URL('/api/connections', getApiUrl()).toString(), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
-      if (followersRes.ok) {
-        const data = await followersRes.json();
-        setFollowers(data);
-      }
-      if (followingRes.ok) {
-        const data = await followingRes.json();
-        setFollowing(data);
+      if (response.ok) {
+        const data = await response.json();
+        setFollowers(data.followers || []);
+        setFollowing(data.following || []);
       }
     } catch (error) {
       console.error('Error fetching connections:', error);
@@ -77,13 +69,9 @@ export default function ConnectionsScreen() {
     if (!token) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      await fetch(new URL('/api/connections/follow', getApiUrl()).toString(), {
+      await fetch(new URL(`/api/connections/${userId}/follow`, getApiUrl()).toString(), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ followingId: userId }),
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchConnections();
     } catch (error) {
@@ -95,7 +83,7 @@ export default function ConnectionsScreen() {
     if (!token) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      await fetch(new URL(`/api/connections/unfollow/${userId}`, getApiUrl()).toString(), {
+      await fetch(new URL(`/api/connections/${userId}/unfollow`, getApiUrl()).toString(), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

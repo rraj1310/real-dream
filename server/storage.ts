@@ -59,6 +59,7 @@ export interface IStorage {
 
   getChampions(tier?: string, year?: number): Promise<Champion[]>;
   getWallOfFame(period: string): Promise<User[]>;
+  getLeaderboard(limit: number): Promise<any[]>;
 
   getGalleryPosts(): Promise<GalleryPost[]>;
   createGalleryPost(post: Partial<GalleryPost>): Promise<GalleryPost>;
@@ -266,6 +267,38 @@ class DatabaseStorage implements IStorage {
 
   async getWallOfFame(period: string): Promise<User[]> {
     return db.select().from(users).orderBy(desc(users.totalPoints)).limit(50);
+  }
+
+  async getLeaderboard(limit: number): Promise<any[]> {
+    const allUsers = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        totalPoints: users.totalPoints,
+        awards: users.awards,
+        profileImage: users.profileImage,
+      })
+      .from(users)
+      .orderBy(desc(users.totalPoints))
+      .limit(limit);
+
+    const usersWithDreams = await Promise.all(
+      allUsers.map(async (user) => {
+        const userDreams = await db
+          .select()
+          .from(dreams)
+          .where(eq(dreams.userId, user.id));
+        const completedDreams = userDreams.filter((d) => d.isCompleted).length;
+        return {
+          ...user,
+          dreamsCompleted: completedDreams,
+          totalDreams: userDreams.length,
+        };
+      })
+    );
+
+    return usersWithDreams;
   }
 
   async getGalleryPosts(): Promise<GalleryPost[]> {

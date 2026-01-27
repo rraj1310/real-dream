@@ -361,6 +361,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const { limit } = req.query;
+      const users = await storage.getLeaderboard(limit ? parseInt(limit as string) : 10);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get leaderboard" });
+    }
+  });
+
   app.get("/api/gallery", async (req, res) => {
     try {
       const posts = await storage.getGalleryPosts();
