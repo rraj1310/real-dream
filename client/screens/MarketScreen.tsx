@@ -138,7 +138,7 @@ export default function MarketScreen() {
               <Feather name="dollar-sign" size={24} color={theme.yellow} />
             </View>
             <View>
-              <ThemedText type="small" style={{ color: "#C4B5FD" }}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>
                 Available Balance
               </ThemedText>
               <ThemedText type="h3">{(user?.coins || 0).toLocaleString()} coins</ThemedText>
@@ -169,7 +169,7 @@ export default function MarketScreen() {
                   type="small"
                   style={[
                     styles.categoryText,
-                    selectedCategory === category ? { color: "#FFFFFF" } : { color: "#FFFFFF" },
+                    selectedCategory === category ? { color: theme.text } : { color: theme.text },
                   ]}
                 >
                   {category}
@@ -182,7 +182,7 @@ export default function MarketScreen() {
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <ThemedText
             type="xs"
-            style={[styles.sectionLabel, { color: "#C4B5FD" }]}
+            style={[styles.sectionLabel, { color: theme.textSecondary }]}
           >
             FEATURED ITEMS
           </ThemedText>
@@ -214,7 +214,7 @@ export default function MarketScreen() {
                   </ThemedText>
                   <ThemedText
                     type="xs"
-                    style={{ color: "#C4B5FD", marginBottom: Spacing.sm }}
+                    style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}
                   >
                     {item.category || "Item"}
                   </ThemedText>

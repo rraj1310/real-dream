@@ -151,7 +151,7 @@ export default function MessagesScreen() {
               <ThemedText type="h3" style={styles.title}>
                 Messages
               </ThemedText>
-              <ThemedText type="body" style={[styles.subtitle, { color: "#C4B5FD" }]}>
+              <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
                 Stay connected with your dream community
               </ThemedText>
             </View>
@@ -206,13 +206,13 @@ export default function MessagesScreen() {
                     >
                       {conversation.otherUser?.fullName || conversation.otherUser?.username || "Unknown"}
                     </ThemedText>
-                    <ThemedText type="xs" style={{ color: "#8B7FC7" }}>
+                    <ThemedText type="xs" style={{ color: theme.textMuted }}>
                       {formatTimeAgo(conversation.lastMessageTime)}
                     </ThemedText>
                   </View>
                   <ThemedText
                     type="small"
-                    style={{ color: "#C4B5FD" }}
+                    style={{ color: theme.textSecondary }}
                     numberOfLines={1}
                   >
                     {conversation.lastMessage}
@@ -236,10 +236,10 @@ export default function MessagesScreen() {
             >
               <Feather name="message-circle" size={32} color="#FFFFFF" />
             </LinearGradient>
-            <ThemedText type="body" style={[styles.emptyText, { color: "#C4B5FD" }]}>
+            <ThemedText type="body" style={[styles.emptyText, { color: theme.textSecondary }]}>
               No conversations yet
             </ThemedText>
-            <ThemedText type="small" style={{ color: "#8B7FC7", textAlign: "center" }}>
+            <ThemedText type="small" style={{ color: theme.textMuted, textAlign: "center" }}>
               Connect with other dreamers to start chatting
             </ThemedText>
           </View>

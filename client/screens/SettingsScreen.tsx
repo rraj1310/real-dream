@@ -62,29 +62,29 @@ export default function SettingsScreen() {
         <Animated.View entering={FadeInDown.springify()}>
           <Card style={styles.userInfoCard}>
             <View style={styles.userInfoRow}>
-              <Feather name="user" size={24} color="#C4B5FD" />
+              <Feather name="user" size={24} color={theme.textSecondary} />
               <View style={styles.userInfoContent}>
                 <ThemedText
                   type="small"
-                  style={{ color: "#8B7FC7" }}
+                  style={{ color: theme.textMuted }}
                 >
                   User Name
                 </ThemedText>
-                <ThemedText type="body" style={[styles.userInfoValue, { color: "#FFFFFF" }]}>
+                <ThemedText type="body" style={[styles.userInfoValue, { color: theme.text }]}>
                   {user?.username || "Not set"}
                 </ThemedText>
               </View>
             </View>
             <View style={styles.userInfoRow}>
-              <Feather name="user" size={24} color="#C4B5FD" />
+              <Feather name="user" size={24} color={theme.textSecondary} />
               <View style={styles.userInfoContent}>
                 <ThemedText
                   type="small"
-                  style={{ color: "#8B7FC7" }}
+                  style={{ color: theme.textMuted }}
                 >
                   Full Name
                 </ThemedText>
-                <ThemedText type="body" style={[styles.userInfoValue, { color: "#FFFFFF" }]}>
+                <ThemedText type="body" style={[styles.userInfoValue, { color: theme.text }]}>
                   {user?.fullName || "Not set"}
                 </ThemedText>
               </View>
@@ -106,9 +106,9 @@ export default function SettingsScreen() {
                 ]}
               >
                 <View style={styles.menuIcon}>
-                  <Feather name={item.icon} size={20} color="#C4B5FD" />
+                  <Feather name={item.icon} size={20} color={theme.textSecondary} />
                 </View>
-                <ThemedText type="body" style={[styles.menuLabel, { color: "#FFFFFF" }]}>
+                <ThemedText type="body" style={[styles.menuLabel, { color: theme.text }]}>
                   {item.label}
                 </ThemedText>
                 <Feather name="chevron-right" size={20} color="#A78BFA" />

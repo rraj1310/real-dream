@@ -116,7 +116,7 @@ export default function GalleryScreen() {
           <ThemedText type="h3" style={styles.title}>
             Dream Gallery
           </ThemedText>
-          <ThemedText type="body" style={[styles.subtitle, { color: "#C4B5FD" }]}>
+          <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
             Explore achievements from our community
           </ThemedText>
         </Animated.View>

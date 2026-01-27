@@ -101,7 +101,7 @@ export default function WallOfFameScreen() {
           </ThemedText>
           <ThemedText
             type="body"
-            style={[styles.headerSubtitle, { color: "#C4B5FD" }]}
+            style={[styles.headerSubtitle, { color: theme.textSecondary }]}
           >
             Celebrating our greatest achievers
           </ThemedText>
@@ -126,7 +126,7 @@ export default function WallOfFameScreen() {
                     styles.tabText,
                     activeTab === tab.key
                       ? styles.tabTextActive
-                      : { color: "#C4B5FD" },
+                      : { color: theme.textSecondary },
                   ]}
                 >
                   {tab.label}
@@ -157,7 +157,7 @@ export default function WallOfFameScreen() {
                   </ThemedText>
                   <ThemedText
                     type="small"
-                    style={{ color: "#C4B5FD" }}
+                    style={{ color: theme.textSecondary }}
                   >
                     {legend.period}
                   </ThemedText>
@@ -174,7 +174,7 @@ export default function WallOfFameScreen() {
                   </ThemedText>
                   <ThemedText
                     type="xs"
-                    style={{ color: "#C4B5FD" }}
+                    style={{ color: theme.textSecondary }}
                   >
                     Dreams
                   </ThemedText>
@@ -185,7 +185,7 @@ export default function WallOfFameScreen() {
                   </ThemedText>
                   <ThemedText
                     type="xs"
-                    style={{ color: "#C4B5FD" }}
+                    style={{ color: theme.textSecondary }}
                   >
                     Achievements
                   </ThemedText>
@@ -196,7 +196,7 @@ export default function WallOfFameScreen() {
                   </ThemedText>
                   <ThemedText
                     type="xs"
-                    style={{ color: "#C4B5FD" }}
+                    style={{ color: theme.textSecondary }}
                   >
                     Points
                   </ThemedText>
@@ -231,15 +231,15 @@ export default function WallOfFameScreen() {
                 </View>
                 <ThemedText
                   type="small"
-                  style={{ color: "#C4B5FD" }}
+                  style={{ color: theme.textSecondary }}
                 >
                   {famer.category}
                 </ThemedText>
                 <View style={styles.famerStats}>
-                  <Feather name="trending-up" size={16} color="#8B7FC7" />
+                  <Feather name="trending-up" size={16} color={theme.textMuted} />
                   <ThemedText
                     type="small"
-                    style={{ color: "#8B7FC7", marginLeft: 4 }}
+                    style={{ color: theme.textMuted, marginLeft: 4 }}
                   >
                     {famer.count} total
                   </ThemedText>

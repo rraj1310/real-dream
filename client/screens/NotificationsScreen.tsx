@@ -118,7 +118,7 @@ export default function NotificationsScreen() {
           <View style={styles.headerRow}>
             <View>
               <ThemedText type="h3">Notifications</ThemedText>
-              <ThemedText type="small" style={{ color: "#C4B5FD" }}>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>
                 {unreadCount > 0 ? `${unreadCount} new notifications` : "All caught up!"}
               </ThemedText>
             </View>
@@ -174,12 +174,12 @@ export default function NotificationsScreen() {
                 </ThemedText>
                 <ThemedText
                   type="small"
-                  style={{ color: "#C4B5FD", marginBottom: 4 }}
+                  style={{ color: theme.textSecondary, marginBottom: 4 }}
                   numberOfLines={2}
                 >
                   {notification.description}
                 </ThemedText>
-                <ThemedText type="xs" style={{ color: "#8B7FC7" }}>
+                <ThemedText type="xs" style={{ color: theme.textMuted }}>
                   {notification.time}
                 </ThemedText>
               </View>

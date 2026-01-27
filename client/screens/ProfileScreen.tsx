@@ -122,7 +122,7 @@ function MenuRow({
       >
         {item.label}
       </ThemedText>
-      <Feather name="chevron-right" size={20} color="#8B7FC7" />
+      <Feather name="chevron-right" size={20} color={theme.textMuted} />
     </Pressable>
   );
 }
@@ -231,7 +231,7 @@ export default function ProfileScreen() {
             <View style={styles.profileInfo}>
               <ThemedText
                 type="xs"
-                style={[styles.profileLabel, { color: "#C4B5FD" }]}
+                style={[styles.profileLabel, { color: theme.textSecondary }]}
               >
                 USERNAME
               </ThemedText>
@@ -240,7 +240,7 @@ export default function ProfileScreen() {
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 Full Name
               </ThemedText>
@@ -248,7 +248,7 @@ export default function ProfileScreen() {
                 {user?.fullName || "User"}
               </ThemedText>
               {user?.bio ? (
-                <ThemedText type="small" style={{ color: "#C4B5FD", marginTop: Spacing.sm, textAlign: "center" }}>
+                <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.sm, textAlign: "center" }}>
                   {user.bio}
                 </ThemedText>
               ) : null}
@@ -272,12 +272,12 @@ export default function ProfileScreen() {
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 View followers and following
               </ThemedText>
             </View>
-            <Feather name="chevron-right" size={20} color="#8B7FC7" />
+            <Feather name="chevron-right" size={20} color={theme.textMuted} />
           </Card>
         </Animated.View>
 
@@ -295,12 +295,12 @@ export default function ProfileScreen() {
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 View your badges and awards
               </ThemedText>
             </View>
-            <Feather name="chevron-right" size={20} color="#8B7FC7" />
+            <Feather name="chevron-right" size={20} color={theme.textMuted} />
           </Card>
         </Animated.View>
 
@@ -323,19 +323,19 @@ export default function ProfileScreen() {
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 Current: {currentTheme.name}
               </ThemedText>
             </View>
-            <Feather name="chevron-right" size={20} color="#8B7FC7" />
+            <Feather name="chevron-right" size={20} color={theme.textMuted} />
           </Card>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).springify()}>
           <ThemedText
             type="xs"
-            style={[styles.sectionLabel, { color: "#C4B5FD" }]}
+            style={[styles.sectionLabel, { color: theme.textSecondary }]}
           >
             MY ORDERS
           </ThemedText>
@@ -354,7 +354,7 @@ export default function ProfileScreen() {
         <Animated.View entering={FadeInDown.delay(250).springify()}>
           <ThemedText
             type="xs"
-            style={[styles.sectionLabel, { color: "#C4B5FD" }]}
+            style={[styles.sectionLabel, { color: theme.textSecondary }]}
           >
             MY ACCOUNT
           </ThemedText>
@@ -375,21 +375,21 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
             <ThemedText type="h3" style={styles.modalTitle}>Edit Profile</ThemedText>
-            <ThemedText type="small" style={[styles.inputLabel, { color: "#C4B5FD" }]}>Full Name</ThemedText>
+            <ThemedText type="small" style={[styles.inputLabel, { color: theme.textSecondary }]}>Full Name</ThemedText>
             <TextInput
-              style={[styles.textInput, { backgroundColor: theme.backgroundSecondary, color: "#FFFFFF" }]}
+              style={[styles.textInput, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
               value={editFullName}
               onChangeText={setEditFullName}
               placeholder="Enter your full name"
-              placeholderTextColor="#8B7FC7"
+              placeholderTextColor={theme.textMuted}
             />
-            <ThemedText type="small" style={[styles.inputLabel, { color: "#C4B5FD" }]}>Bio</ThemedText>
+            <ThemedText type="small" style={[styles.inputLabel, { color: theme.textSecondary }]}>Bio</ThemedText>
             <TextInput
-              style={[styles.textInput, styles.bioInput, { backgroundColor: theme.backgroundSecondary, color: "#FFFFFF" }]}
+              style={[styles.textInput, styles.bioInput, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
               value={editBio}
               onChangeText={setEditBio}
               placeholder="Tell us about yourself"
-              placeholderTextColor="#8B7FC7"
+              placeholderTextColor={theme.textMuted}
               multiline
             />
             <View style={styles.modalButtons}>
@@ -408,7 +408,7 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.backgroundDefault }]}>
             <ThemedText type="h3" style={styles.modalTitle}>Delete Account</ThemedText>
-            <ThemedText type="body" style={{ color: "#C4B5FD", textAlign: "center", marginBottom: Spacing.xl }}>
+            <ThemedText type="body" style={{ color: theme.textSecondary, textAlign: "center", marginBottom: Spacing.xl }}>
               Are you sure you want to delete your account? This action cannot be undone.
             </ThemedText>
             <View style={styles.modalButtons}>
@@ -416,7 +416,7 @@ export default function ProfileScreen() {
                 <ThemedText type="body">Cancel</ThemedText>
               </Pressable>
               <Pressable onPress={handleDeleteAccount} style={[styles.deleteButton]}>
-                <ThemedText type="body" style={{ color: "#FFFFFF" }}>
+                <ThemedText type="body" style={{ color: theme.text }}>
                   {isLoading ? "Deleting..." : "Delete"}
                 </ThemedText>
               </Pressable>

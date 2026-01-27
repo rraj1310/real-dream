@@ -109,7 +109,7 @@ export default function WalletScreen() {
             <View style={styles.balanceHeader}>
               <ThemedText
                 type="body"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 Total Balance
               </ThemedText>
@@ -118,7 +118,7 @@ export default function WalletScreen() {
               </ThemedText>
               <ThemedText
                 type="body"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 Coins
               </ThemedText>
@@ -170,7 +170,7 @@ export default function WalletScreen() {
               <Feather
                 name="dollar-sign"
                 size={16}
-                color={activeTab === "coins" ? "#FFFFFF" : "#C4B5FD"}
+                color={activeTab === "coins" ? theme.text : theme.textSecondary}
               />
               <ThemedText
                 type="small"
@@ -178,7 +178,7 @@ export default function WalletScreen() {
                   styles.tabText,
                   activeTab === "coins"
                     ? styles.tabTextActive
-                    : { color: "#C4B5FD" },
+                    : { color: theme.textSecondary },
                 ]}
               >
                 Coins
@@ -194,7 +194,7 @@ export default function WalletScreen() {
               <Feather
                 name="award"
                 size={16}
-                color={activeTab === "awards" ? "#FFFFFF" : "#C4B5FD"}
+                color={activeTab === "awards" ? theme.text : theme.textSecondary}
               />
               <ThemedText
                 type="small"
@@ -202,7 +202,7 @@ export default function WalletScreen() {
                   styles.tabText,
                   activeTab === "awards"
                     ? styles.tabTextActive
-                    : { color: "#C4B5FD" },
+                    : { color: theme.textSecondary },
                 ]}
               >
                 Awards
@@ -220,8 +220,8 @@ export default function WalletScreen() {
               <ActivityIndicator size="large" color="#A78BFA" />
             ) : transactions.length === 0 ? (
               <Card style={styles.emptyCard}>
-                <Feather name="inbox" size={40} color="#8B7FC7" />
-                <ThemedText type="body" style={{ color: "#C4B5FD", marginTop: Spacing.md }}>
+                <Feather name="inbox" size={40} color={theme.textMuted} />
+                <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
                   No transactions yet
                 </ThemedText>
               </Card>
@@ -259,7 +259,7 @@ export default function WalletScreen() {
                         </ThemedText>
                         <ThemedText
                           type="small"
-                          style={{ color: "#C4B5FD" }}
+                          style={{ color: theme.textSecondary }}
                         >
                           {formatDate(transaction.createdAt)}
                         </ThemedText>
@@ -302,7 +302,7 @@ export default function WalletScreen() {
                   </ThemedText>
                   <ThemedText
                     type="xs"
-                    style={{ color: "#C4B5FD" }}
+                    style={{ color: theme.textSecondary }}
                   >
                     {award.earned}
                   </ThemedText>

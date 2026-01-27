@@ -139,12 +139,12 @@ export default function ChampionsScreen() {
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 View legendary achievers
               </ThemedText>
             </View>
-            <Feather name="chevron-right" size={20} color="#8B7FC7" />
+            <Feather name="chevron-right" size={20} color={theme.textMuted} />
           </Card>
         </Animated.View>
 
@@ -167,12 +167,12 @@ export default function ChampionsScreen() {
               </ThemedText>
               <ThemedText
                 type="small"
-                style={{ color: "#C4B5FD" }}
+                style={{ color: theme.textSecondary }}
               >
                 Celebrate top performers
               </ThemedText>
             </View>
-            <Feather name="chevron-right" size={20} color="#8B7FC7" />
+            <Feather name="chevron-right" size={20} color={theme.textMuted} />
           </Card>
         </Animated.View>
 
@@ -182,7 +182,7 @@ export default function ChampionsScreen() {
           <View style={styles.sectionHeader}>
             <ThemedText
               type="xs"
-              style={[styles.sectionLabel, { color: "#C4B5FD" }]}
+              style={[styles.sectionLabel, { color: theme.textSecondary }]}
             >
               TOP CHAMPIONS THIS MONTH
             </ThemedText>
@@ -197,8 +197,8 @@ export default function ChampionsScreen() {
               <ActivityIndicator size="small" color={theme.link} style={{ padding: Spacing.xl }} />
             ) : topChampions.length === 0 ? (
               <View style={styles.emptyState}>
-                <Feather name="award" size={32} color="#8B7FC7" />
-                <ThemedText type="small" style={{ color: "#C4B5FD", marginTop: Spacing.sm }}>
+                <Feather name="award" size={32} color={theme.textMuted} />
+                <ThemedText type="small" style={{ color: theme.textSecondary, marginTop: Spacing.sm }}>
                   No champions yet
                 </ThemedText>
               </View>
@@ -229,7 +229,7 @@ export default function ChampionsScreen() {
                       </ThemedText>
                       <ThemedText
                         type="small"
-                        style={{ color: "#C4B5FD" }}
+                        style={{ color: theme.textSecondary }}
                       >
                         {user.dreamsCompleted} dreams completed
                       </ThemedText>
@@ -252,7 +252,7 @@ export default function ChampionsScreen() {
           <Animated.View entering={FadeInDown.delay(300).springify()}>
             <ThemedText
               type="xs"
-              style={[styles.sectionLabel, { color: "#C4B5FD" }]}
+              style={[styles.sectionLabel, { color: theme.textSecondary }]}
             >
               RISING STARS
             </ThemedText>
@@ -279,7 +279,7 @@ export default function ChampionsScreen() {
                     </ThemedText>
                     <ThemedText
                       type="small"
-                      style={{ color: "#C4B5FD" }}
+                      style={{ color: theme.textSecondary }}
                     >
                       {user.totalPoints.toLocaleString()} points - {user.awards} awards
                     </ThemedText>
@@ -328,7 +328,7 @@ export default function ChampionsScreen() {
 
                 <ThemedText
                   type="body"
-                  style={[styles.modalDescription, { color: "#C4B5FD" }]}
+                  style={[styles.modalDescription, { color: theme.textSecondary }]}
                 >
                   @{selectedUser.username}
                 </ThemedText>
@@ -339,7 +339,7 @@ export default function ChampionsScreen() {
                     <ThemedText type="h3" style={styles.statValue}>
                       {selectedUser.dreamsCompleted}
                     </ThemedText>
-                    <ThemedText type="xs" style={{ color: "#C4B5FD" }}>
+                    <ThemedText type="xs" style={{ color: theme.textSecondary }}>
                       Dreams
                     </ThemedText>
                   </View>
@@ -348,7 +348,7 @@ export default function ChampionsScreen() {
                     <ThemedText type="h3" style={styles.statValue}>
                       {selectedUser.totalPoints.toLocaleString()}
                     </ThemedText>
-                    <ThemedText type="xs" style={{ color: "#C4B5FD" }}>
+                    <ThemedText type="xs" style={{ color: theme.textSecondary }}>
                       Points
                     </ThemedText>
                   </View>
@@ -357,7 +357,7 @@ export default function ChampionsScreen() {
                     <ThemedText type="h3" style={styles.statValue}>
                       {selectedUser.awards}
                     </ThemedText>
-                    <ThemedText type="xs" style={{ color: "#C4B5FD" }}>
+                    <ThemedText type="xs" style={{ color: theme.textSecondary }}>
                       Awards
                     </ThemedText>
                   </View>
