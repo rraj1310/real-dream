@@ -43,7 +43,7 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
 
   const handleSignIn = async () => {
     if (!email || !password) {
-      setError("Please enter your email and password");
+      setError("Please enter your email/username and password");
       return;
     }
     
@@ -156,14 +156,13 @@ export default function SignInScreen({ navigation }: SignInScreenProps) {
 
         <View style={styles.formSection}>
           <View style={styles.glassInput}>
-            <Feather name="mail" size={20} color="#8B7FC7" style={styles.inputIcon} />
+            <Feather name="user" size={20} color="#8B7FC7" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
-              placeholder="Enter your email"
+              placeholder="Email or Username"
               placeholderTextColor="#8B7FC7"
               value={email}
               onChangeText={setEmail}
-              keyboardType="email-address"
               autoCapitalize="none"
               testID="input-email"
             />

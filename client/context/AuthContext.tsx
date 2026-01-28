@@ -42,7 +42,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (emailOrUsername: string, password: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   loginWithFacebook: () => Promise<{ success: boolean; error?: string }>;
   sendPhoneCode: (phoneNumber: string, recaptchaContainerId: string) => Promise<{ success: boolean; error?: string }>;
@@ -151,8 +151,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, [loadStoredAuth, apiUrl]);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (emailOrUsername: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      const input = emailOrUsername.trim().toLowerCase();
+      let email = input;
+      
+      if (!input.includes('@')) {
+        try {
+          const response = await fetch(new URL('/api/auth/resolve-username', apiUrl).toString(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: input }),
+          });
+          
+          if (!response.ok) {
+            return { success: false, error: 'No account found with this username' };
+          }
+          
+          const data = await response.json();
+          email = data.email;
+        } catch {
+          return { success: false, error: 'Failed to resolve username' };
+        }
+      }
+      
       const userCredential = await signInWithEmail(email, password);
       const firebaseToken = await userCredential.user.getIdToken();
       

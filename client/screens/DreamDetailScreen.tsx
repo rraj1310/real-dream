@@ -417,6 +417,25 @@ export default function DreamDetailScreen() {
             </View>
           )}
         </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(400).springify()}>
+          <Pressable
+            style={styles.addDreamButton}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              navigation.navigate('CreateDream', { type: dream?.type || 'personal' });
+            }}
+            testID="button-add-more-dreams"
+          >
+            <LinearGradient
+              colors={["rgba(124, 58, 237, 0.2)", "rgba(168, 85, 247, 0.2)"]}
+              style={styles.addDreamGradient}
+            >
+              <Feather name="plus-circle" size={24} color="#A78BFA" />
+              <ThemedText style={styles.addDreamText}>Create Another Dream</ThemedText>
+            </LinearGradient>
+          </Pressable>
+        </Animated.View>
       </ScrollView>
     </GalaxyBackground>
   );
@@ -647,5 +666,24 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     color: "#8B7FC7",
+  },
+  addDreamButton: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  addDreamGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: "rgba(167, 139, 250, 0.3)",
+  },
+  addDreamText: {
+    color: "#A78BFA",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

@@ -26,6 +26,36 @@ type DreamTypeOption = "personal" | "challenge" | "group";
 type DurationUnit = "days" | "weeks" | "months" | "years";
 type Recurrence = "daily" | "weekly" | "semi-weekly" | "monthly" | "semi-monthly";
 
+function getValidRecurrences(durationUnit: DurationUnit): Recurrence[] {
+  switch (durationUnit) {
+    case "days":
+      return ["daily", "semi-weekly"];
+    case "weeks":
+      return ["daily", "weekly", "semi-weekly"];
+    case "months":
+      return ["daily", "weekly", "monthly", "semi-monthly"];
+    case "years":
+      return ["monthly", "semi-monthly"];
+    default:
+      return ["daily"];
+  }
+}
+
+function getDefaultRecurrence(durationUnit: DurationUnit): Recurrence {
+  switch (durationUnit) {
+    case "days":
+      return "daily";
+    case "weeks":
+      return "weekly";
+    case "months":
+      return "weekly";
+    case "years":
+      return "monthly";
+    default:
+      return "daily";
+  }
+}
+
 interface GeneratedTask {
   date: Date;
   text: string;
@@ -305,6 +335,17 @@ export default function CreateDreamScreen() {
     const durationNum = parseInt(duration, 10);
     if (!durationNum || durationNum <= 0) {
       setError("Duration must be a positive number");
+      return;
+    }
+    
+    const validRecurrences = getValidRecurrences(durationUnit);
+    if (!validRecurrences.includes(recurrence)) {
+      setError(`${recurrence} is not valid for ${durationUnit} duration. Please select: ${validRecurrences.join(", ")}`);
+      return;
+    }
+    
+    if (generatedTasks.length === 0) {
+      setError("No tasks can be generated with this combination. Please adjust duration or recurrence.");
       return;
     }
     
@@ -654,7 +695,12 @@ export default function CreateDreamScreen() {
                   durationUnit === option.value && styles.pickerOptionSelected,
                 ]}
                 onPress={() => {
-                  setDurationUnit(option.value);
+                  const newUnit = option.value;
+                  setDurationUnit(newUnit);
+                  const validRecurrences = getValidRecurrences(newUnit);
+                  if (!validRecurrences.includes(recurrence)) {
+                    setRecurrence(getDefaultRecurrence(newUnit));
+                  }
                   setShowDurationUnitPicker(false);
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 }}
@@ -686,7 +732,9 @@ export default function CreateDreamScreen() {
         >
           <View style={styles.pickerModalContent}>
             <ThemedText type="h4" style={styles.pickerTitle}>Re-occurrence</ThemedText>
-            {recurrenceOptions.map(option => (
+            {recurrenceOptions
+              .filter(option => getValidRecurrences(durationUnit).includes(option.value))
+              .map(option => (
               <Pressable
                 key={option.value}
                 style={[

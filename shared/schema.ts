@@ -364,7 +364,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  emailOrUsername: z.string().min(1, "Email or username is required"),
   password: z.string().min(6),
 });
 

@@ -98,8 +98,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: result.error.errors[0].message });
       }
 
-      const { email, password } = result.data;
-      const user = await storage.getUserByEmail(email);
+      const { emailOrUsername, password } = result.data;
+      const input = emailOrUsername.trim().toLowerCase();
+      
+      let user = await storage.getUserByEmail(input);
+      if (!user) {
+        user = await storage.getUserByUsername(input);
+      }
+      
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
@@ -122,6 +128,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/resolve-username", async (req, res) => {
+    try {
+      const { username } = req.body;
+      if (!username) {
+        return res.status(400).json({ error: "Username is required" });
+      }
+      
+      const user = await storage.getUserByUsername(username.trim().toLowerCase());
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json({ email: user.email });
+    } catch (error) {
+      console.error("Resolve username error:", error);
+      res.status(500).json({ error: "Failed to resolve username" });
     }
   });
 
