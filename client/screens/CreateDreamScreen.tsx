@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { View, StyleSheet, Pressable, TextInput, ScrollView, ActivityIndicator, Platform, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -100,6 +101,7 @@ function generateTaskDates(startDate: Date, duration: number, durationUnit: Dura
 export default function CreateDreamScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
+  const tabBarHeight = useBottomTabBarHeight();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { theme } = useTheme();
@@ -292,7 +294,7 @@ export default function CreateDreamScreen() {
           styles.scrollContent,
           {
             paddingTop: headerHeight + Spacing.xl,
-            paddingBottom: insets.bottom + Spacing.xl,
+            paddingBottom: tabBarHeight + Spacing.xl + 60,
           },
         ]}
         showsVerticalScrollIndicator={false}
