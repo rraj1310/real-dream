@@ -1,0 +1,105 @@
+Context
+
+This is a fully functional, market-ready mobile app with:
+
+Real backend & database
+
+Working authentication (Email/Username, Google, Phone, Facebook)
+
+Correct dream & task logic
+
+No hardcoded data
+
+⚠️ Do NOT change any UI, screens, logic, or features.
+Only prepare the project so that a production-grade Android APK can be generated and published.
+
+1️⃣ Prepare App for PRODUCTION BUILD (MANDATORY)
+
+Ensure the project is configured for Expo EAS production APK:
+
+App must run without errors using:
+
+npx expo start
+
+
+App must not depend on Expo Go–only APIs
+
+No debug-only code, logs, or dev flags
+
+2️⃣ Expo Configuration (NO UI CHANGE)
+
+Verify and ensure:
+
+app.config.js is valid and clean
+
+extra.eas.projectId is correctly set
+
+Android package name is fixed and unique
+
+App version and build number are set for release
+
+All required Expo plugins are declared
+
+Do NOT remove existing plugins.
+
+3️⃣ Environment Variables (PRODUCTION SAFE)
+
+Ensure all required environment variables use:
+
+EXPO_PUBLIC_*
+
+
+No secrets hardcoded in code
+
+App must not crash if env is missing (graceful error handling)
+
+4️⃣ Authentication & Backend Safety
+
+Confirm:
+
+Auth flows work in production builds
+
+Google / Facebook / Phone auth use production credentials
+
+Backend endpoints are real and not mocked
+
+Each user sees only their own data
+
+5️⃣ Build Configuration (IMPORTANT)
+
+Prepare the project so it can generate a release APK using:
+
+npx eas build --platform android --profile production
+
+
+Requirements:
+
+Production keystore generation enabled
+
+No debug/dev client flags
+
+No emulator-only assumptions
+
+6️⃣ APK QUALITY CHECKS
+
+Before final build, ensure:
+
+App opens without crashing
+
+Login & signup work
+
+Dream creation & tasks work
+
+No console errors on launch
+
+App handles offline state gracefully
+
+7️⃣ STRICT CONSTRAINTS
+
+❌ Do NOT redesign UI
+❌ Do NOT refactor logic
+❌ Do NOT change feature behavior
+❌ Do NOT downgrade dependencies
+
+✅ Only optimize for APK release & stability
+✅ Follow Android production best practices
