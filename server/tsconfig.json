@@ -3,13 +3,17 @@
     "target": "ES2020",
     "module": "CommonJS",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "..",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../shared/*"]
-    },
-    "esModuleInterop": true,
-    "strict": false,
-    "skipLibCheck": true
-  }
+    }
+  },
+  "include": [
+    "./**/*.ts",
+    "../shared/**/*.ts"
+  ]
 }
