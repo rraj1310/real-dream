@@ -1,0 +1,183 @@
+Context
+
+This is a real-world, production-ready mobile app (Expo / React Native) with real backend, authentication, and database already implemented.
+
+⚠️ Do NOT change any UI, styling, layout, colors, animations, navigation, or screen structure.
+Only fix logic, validation, and backend-safe functionality to make the app market-ready and APK-stable.
+
+1️⃣ Fix Duration × Recurrence Validation (CRITICAL)
+Problem
+
+Invalid combinations are currently allowed, such as:
+
+4 days + weekly
+
+days + monthly
+
+Weekly duration generating daily tasks
+
+Required Fix
+
+Implement strict validation and dynamic restriction.
+
+Allowed combinations
+Duration Unit	Allowed Recurrence
+Days	daily, semi-weekly
+Weeks	daily, weekly, semi-weekly
+Months	daily, weekly, monthly, semi-monthly
+Years	monthly, semi-monthly
+Rules
+
+Disable or auto-correct invalid recurrence options
+
+Block submission if invalid combo exists
+
+Show clear validation message explaining why the combo is invalid
+
+2️⃣ Replace Bi-Weekly / Bi-Monthly
+Required Change
+
+Remove:
+
+bi-weekly
+
+bi-monthly
+
+Replace with:
+
+semi-weekly → twice per week (alternating 3–4 day gap)
+
+semi-monthly → 1st & 16th of each month
+
+Ensure:
+
+No date drift
+
+Month-length safe
+
+Leap-year safe
+
+3️⃣ Task Generation Core Logic (VERY IMPORTANT)
+❗ NEW RULE (MANDATORY)
+
+👉 The FIRST generated task must always be scheduled on the COMPLETION DATE of the FIRST occurrence, not on the start date.
+
+Example
+
+Start date: Jan 28
+
+Recurrence: weekly
+➡ First task date: Feb 4, not Jan 28
+
+After the first task:
+
+All remaining tasks are calculated strictly based on recurrence interval
+
+4️⃣ Correct Task Generation Algorithm (NO UI CHANGE)
+Rules
+
+Tasks must be generated:
+
+Based on recurrence, not duration
+
+Starting from completion date of first occurrence
+
+Never exceed calculated end date
+
+Never duplicate dates
+
+Never generate daily tasks unless recurrence = daily
+
+Recurrence Definitions
+
+daily → every 1 day
+
+semi-weekly → alternate 3 days / 4 days
+
+weekly → every 7 days
+
+semi-monthly → 1st & 16th
+
+monthly → same calendar day each month (fallback to last valid day if missing)
+
+5️⃣ Fix Generated Task Count Bug
+Problems
+
+Weekly duration producing daily tasks
+
+Incorrect task count shown
+
+Required Fix
+
+Task count must match mathematical expectation
+
+If calculated task count = 0 → block submission
+
+Display:
+
+“X tasks will be created based on your schedule”
+
+6️⃣ Fix “+ More Dreams” Button (BLOCKER)
+Problem
+
++ More Dreams button is not functioning.
+
+Required Behavior
+
+Allows user to add multiple dreams sequentially
+
+Each dream saved independently
+
+No overwrite of previous dreams
+
+Backend persistence required (no local-only state)
+
+7️⃣ Login Enhancement (SAFE CHANGE ONLY)
+Requirement
+
+Allow user to login using:
+
+Email OR Username
+
+Rules
+
+Existing Google / Phone / Facebook login must remain untouched
+
+Resolve username → email at backend level
+
+Do not create duplicate users
+
+Do not break existing auth flows
+
+8️⃣ Backend & Market-Ready Constraints
+
+❌ No hardcoded data
+
+❌ No mock users
+
+❌ No static task lists
+
+✅ All data must be user-specific
+
+✅ App must not crash in APK build
+
+✅ Logic must work offline-safe (graceful failure)
+
+9️⃣ If Anything Is Missing
+
+If any logic improvement, edge-case handling, or data validation is required for correctness or stability,
+➡️ Implement it proactively without changing UI.
+
+✅ Expected Output
+
+Fixed validation logic
+
+Correct task scheduling (first task = completion of first occurrence)
+
+Accurate task count
+
+Working “+ More Dreams”
+
+Stable login via email or username
+
+Market-ready backend-safe behavior

@@ -74,7 +74,8 @@ function calculateEndDate(
 
 function generateDailyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  let currentDate = normalizeToLocalMidnight(start);
+  // First task is on COMPLETION of first occurrence (start + 1 day)
+  let currentDate = addDays(normalizeToLocalMidnight(start), 1);
   let order = 0;
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
@@ -87,7 +88,8 @@ function generateDailyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  let currentDate = normalizeToLocalMidnight(start);
+  // First task is on COMPLETION of first occurrence (start + 7 days)
+  let currentDate = addDays(normalizeToLocalMidnight(start), 7);
   let order = 0;
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
@@ -100,14 +102,15 @@ function generateWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateSemiWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  let currentDate = normalizeToLocalMidnight(start);
+  // First task is on COMPLETION of first occurrence (start + 3 days, then alternate 4/3)
+  let currentDate = addDays(normalizeToLocalMidnight(start), 3);
   let order = 0;
-  let useThreeDays = true;
+  let useFourDays = true; // After first 3-day gap, alternate with 4 days
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
     tasks.push({ date: new Date(currentDate), order: order++ });
-    currentDate = addDays(currentDate, useThreeDays ? 3 : 4);
-    useThreeDays = !useThreeDays;
+    currentDate = addDays(currentDate, useFourDays ? 4 : 3);
+    useFourDays = !useFourDays;
   }
   
   return tasks;
@@ -115,7 +118,8 @@ function generateSemiWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateMonthlyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  let currentDate = normalizeToLocalMidnight(start);
+  // First task is on COMPLETION of first occurrence (start + 1 month)
+  let currentDate = addMonths(normalizeToLocalMidnight(start), 1);
   let order = 0;
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
@@ -130,52 +134,49 @@ function generateSemiMonthlyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
   let order = 0;
   
+  // Semi-monthly: 1st & 16th of each month
+  // First task is the NEXT 1st or 16th AFTER start date (completion of first occurrence)
   const startNorm = normalizeToLocalMidnight(start);
   let year = startNorm.getFullYear();
   let month = startNorm.getMonth();
   const startDay = startNorm.getDate();
   
-  const lastDayOfStartMonth = getLastDayOfMonth(year, month);
-  const midDay = 15;
-  
-  if (startDay <= midDay) {
-    const firstTask = new Date(year, month, midDay);
-    if (firstTask.getTime() >= startNorm.getTime() && firstTask.getTime() <= endDate.getTime()) {
-      tasks.push({ date: normalizeToLocalMidnight(firstTask), order: order++ });
-    }
-    
-    const secondTask = new Date(year, month, lastDayOfStartMonth);
-    if (secondTask.getTime() >= startNorm.getTime() && secondTask.getTime() <= endDate.getTime()) {
-      tasks.push({ date: normalizeToLocalMidnight(secondTask), order: order++ });
-    }
+  // Find the first task date (next 1st or 16th strictly after start)
+  let firstTaskDate: Date;
+  if (startDay < 16) {
+    // Next occurrence is the 16th of this month
+    firstTaskDate = new Date(year, month, 16);
   } else {
-    const lastTask = new Date(year, month, lastDayOfStartMonth);
-    if (lastTask.getTime() >= startNorm.getTime() && lastTask.getTime() <= endDate.getTime()) {
-      tasks.push({ date: normalizeToLocalMidnight(lastTask), order: order++ });
-    }
-  }
-  
-  month++;
-  if (month > 11) {
-    month = 0;
-    year++;
-  }
-  
-  while (order < 1000) {
-    const lastDayOfMonth = getLastDayOfMonth(year, month);
-    
-    const midTask = new Date(year, month, midDay);
-    if (midTask.getTime() > endDate.getTime()) break;
-    tasks.push({ date: normalizeToLocalMidnight(midTask), order: order++ });
-    
-    const endTask = new Date(year, month, lastDayOfMonth);
-    if (endTask.getTime() > endDate.getTime()) break;
-    tasks.push({ date: normalizeToLocalMidnight(endTask), order: order++ });
-    
+    // Next occurrence is the 1st of next month
     month++;
     if (month > 11) {
       month = 0;
       year++;
+    }
+    firstTaskDate = new Date(year, month, 1);
+  }
+  
+  // Generate tasks starting from first task date
+  let currentYear = firstTaskDate.getFullYear();
+  let currentMonth = firstTaskDate.getMonth();
+  let currentDay = firstTaskDate.getDate(); // Either 1 or 16
+  
+  while (order < 1000) {
+    const taskDate = new Date(currentYear, currentMonth, currentDay);
+    if (taskDate.getTime() > endDate.getTime()) break;
+    
+    tasks.push({ date: normalizeToLocalMidnight(taskDate), order: order++ });
+    
+    // Alternate between 1st and 16th
+    if (currentDay === 1) {
+      currentDay = 16;
+    } else {
+      currentDay = 1;
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
     }
   }
   
