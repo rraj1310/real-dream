@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl } from "react-native";
+import { View, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl, Modal, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { GalaxyBackground } from "@/components/GalaxyBackground";
 import { Card } from "@/components/Card";
 import { AdBanner } from "@/components/AdBanner";
+import { Button } from "@/components/Button";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -52,7 +53,9 @@ function formatTimeAgo(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 60) {
+  if (diffMins < 1) {
+    return "Just now";
+  } else if (diffMins < 60) {
     return `${diffMins} minutes ago`;
   } else if (diffHours < 24) {
     return `${diffHours} hours ago`;
@@ -65,11 +68,15 @@ export default function NewsFeedScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [feedPosts, setFeedPosts] = useState<NewsFeedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
 
   const fetchNewsFeed = async () => {
     try {
@@ -89,6 +96,40 @@ export default function NewsFeedScreen() {
   useEffect(() => {
     fetchNewsFeed();
   }, []);
+
+  const handleCreatePost = async () => {
+    if (!newPostContent.trim() || !token) return;
+    
+    setIsPosting(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    try {
+      const response = await fetch(new URL('/api/news-feed', getApiUrl()).toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: newPostContent.trim(),
+        }),
+      });
+      
+      if (response.ok) {
+        setNewPostContent("");
+        setShowCreateModal(false);
+        fetchNewsFeed();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error) {
+      console.error("Failed to create post:", error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsPosting(false);
+    }
+  };
 
   const handleLike = async (postId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -135,7 +176,7 @@ export default function NewsFeedScreen() {
           styles.scrollContent,
           {
             paddingTop: headerHeight + Spacing.xl,
-            paddingBottom: insets.bottom + Spacing.xl,
+            paddingBottom: insets.bottom + Spacing.xl + 80,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -244,6 +285,110 @@ export default function NewsFeedScreen() {
           </Animated.View>
         )}
       </ScrollView>
+
+      <Pressable
+        style={[styles.fab, { backgroundColor: theme.link }]}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          setShowCreateModal(true);
+        }}
+        testID="button-create-post"
+      >
+        <LinearGradient
+          colors={["#8B5CF6", "#A855F7"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.fabGradient}
+        >
+          <Feather name="plus" size={28} color="#FFFFFF" />
+        </LinearGradient>
+      </Pressable>
+
+      <Modal
+        visible={showCreateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCreateModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalContainer}
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setShowCreateModal(false)}
+          />
+          <View style={[styles.modalContent, { backgroundColor: theme.backgroundSecondary }]}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="h4">Create Post</ThemedText>
+              <Pressable
+                onPress={() => setShowCreateModal(false)}
+                hitSlop={12}
+              >
+                <Feather name="x" size={24} color={theme.textSecondary} />
+              </Pressable>
+            </View>
+            
+            <View style={styles.composerHeader}>
+              <LinearGradient
+                colors={["#8B5CF6", "#A855F7"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.composerAvatar}
+              >
+                <Feather name="user" size={16} color="#FFFFFF" />
+              </LinearGradient>
+              <ThemedText type="body" style={styles.composerName}>
+                {user?.fullName || user?.username || "You"}
+              </ThemedText>
+            </View>
+            
+            <TextInput
+              style={[
+                styles.postInput,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  color: theme.text,
+                  borderColor: "rgba(139, 127, 199, 0.3)",
+                },
+              ]}
+              placeholder="Share your dreams, achievements, or thoughts with the community..."
+              placeholderTextColor={theme.textMuted}
+              multiline
+              numberOfLines={5}
+              value={newPostContent}
+              onChangeText={setNewPostContent}
+              textAlignVertical="top"
+              testID="input-post-content"
+            />
+            
+            <ThemedText type="xs" style={[styles.charCount, { color: theme.textMuted }]}>
+              {newPostContent.length}/500 characters
+            </ThemedText>
+            
+            <View style={styles.modalActions}>
+              <Button
+                onPress={() => {
+                  setNewPostContent("");
+                  setShowCreateModal(false);
+                }}
+                variant="secondary"
+                style={styles.cancelButton}
+              >
+                Cancel
+              </Button>
+              <Button
+                onPress={handleCreatePost}
+                disabled={!newPostContent.trim() || isPosting || newPostContent.length > 500}
+                style={styles.postButton}
+                testID="button-submit-post"
+              >
+                {isPosting ? "Posting..." : "Post"}
+              </Button>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </GalaxyBackground>
   );
 }
@@ -332,5 +477,82 @@ const styles = StyleSheet.create({
   emptyStateText: {
     textAlign: "center",
     maxWidth: 280,
+  },
+  fab: {
+    position: "absolute",
+    right: Spacing.xl,
+    bottom: 100,
+    borderRadius: BorderRadius.full,
+    elevation: 8,
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+  fabGradient: {
+    width: 60,
+    height: 60,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    borderTopLeftRadius: BorderRadius.md,
+    borderTopRightRadius: BorderRadius.md,
+    padding: Spacing.xl,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.xl,
+  },
+  composerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing.md,
+  },
+  composerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Spacing.md,
+  },
+  composerName: {
+    fontWeight: "600",
+  },
+  postInput: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    fontSize: 16,
+    minHeight: 120,
+    maxHeight: 200,
+  },
+  charCount: {
+    textAlign: "right",
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.md,
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+  },
+  postButton: {
+    flex: 2,
   },
 });
