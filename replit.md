@@ -226,3 +226,11 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Semi-monthly: Calendar-based approach using 15th and last day of each month
 - End date is now exclusive to prevent over-generation of tasks
 - Task counts verified: daily=7/week, weekly=1/week, semi-weekly=2/week, monthly=1/month, semi-monthly=2/month
+- January 2026: UX Improvements & Validation
+- Login via username OR email: Backend resolves username to email via /api/auth/resolve-username before Firebase auth
+- Duration × Recurrence validation: Invalid combinations are blocked (e.g., years+daily not allowed)
+- Valid combinations: days→daily/semi-weekly, weeks→daily/weekly/semi-weekly, months→all, years→monthly/semi-monthly
+- Auto-adjustment: When duration unit changes, recurrence auto-adjusts if current selection is invalid
+- Recurrence picker only shows valid options based on selected duration unit
+- "+N more tasks" button now toggles to show all tasks (with chevron icon animation)
+- "Create Another Dream" button added to DreamDetailScreen for quick dream creation workflow
