@@ -1,0 +1,157 @@
+Continue working on the existing market-ready Dream Creation system.
+Do NOT change any UI, layout, labels, dropdown design, spacing, or theme.
+Only update recurrence logic, date calculations, and task generation so the behavior matches real-world expectations and is APK/production safe.
+
+1️⃣ RECURRENCE TERMINOLOGY UPDATE (IMPORTANT)
+
+Replace recurrence options internally (logic only) as follows:
+
+❌ Remove:
+
+bi-weekly
+
+bi-monthly
+
+✅ Use instead:
+
+semi-weekly
+
+semi-monthly
+
+⚠️ UI text must remain unchanged if already mapped
+⚠️ Only logic & internal naming should be corrected
+
+2️⃣ CORRECT REAL-WORLD RECURRENCE MEANING (MANDATORY)
+✅ Recurrence definitions to implement
+Recurrence	Correct Meaning (REAL LIFE)
+daily	Every day (+1 day)
+weekly	Once per week (+7 days)
+semi-weekly	Twice per week (every ~3–4 days)
+monthly	Once per calendar month
+semi-monthly	Twice per month (1st half & 2nd half)
+
+❌ Do NOT treat semi-weekly as 14 days
+❌ Do NOT treat semi-monthly as 2 months
+
+3️⃣ FIX CURRENT BUG (CRITICAL)
+❌ Current issue:
+
+Selecting 1 week duration
+
+Generates 8 tasks ❌ (incorrect)
+
+✅ Correct behavior:
+
+weekly + 1 week → 1 task
+
+semi-weekly + 1 week → 2 tasks
+
+daily + 1 week → 7 tasks
+
+👉 Task count must always match:
+
+(task frequency) × (duration window)
+
+
+No over-generation.
+
+4️⃣ DATE CALCULATION RULES (IMPLEMENT EXACTLY)
+🔹 BASE INTERVAL RULES
+Recurrence	Interval Logic
+daily	+1 day
+weekly	+7 days
+semi-weekly	Split week into 2 → +3 days, then +4 days
+monthly	+1 calendar month
+semi-monthly	2 fixed points per month (see below)
+🔹 SEMI-WEEKLY DATE LOGIC (IMPORTANT)
+
+Generate 2 tasks per week
+
+First task = Start Date
+
+Second task = Start Date + 3 or 4 days
+
+Alternate 3 / 4 to avoid drift
+
+Never exceed duration end date
+
+🔹 SEMI-MONTHLY DATE LOGIC (IMPORTANT)
+
+Use calendar-based approach, not day math:
+
+Two tasks per month:
+
+First half → around 15th
+
+Second half → around last day of month
+
+If start date is after mid-month:
+
+Generate only remaining valid task(s)
+
+Respect month length (28–31 days)
+
+5️⃣ EDGE CASE HANDLING (PRODUCTION READY)
+✅ Month Length
+
+31st → Feb → clamp to 28/29
+
+Always pick last valid day
+
+✅ Leap Year
+
+Feb 29 only in leap years
+
+No fake dates
+
+✅ Duration Cutoff
+
+Never generate tasks beyond duration end
+
+Final task date ≤ calculated end date
+
+✅ Timezone Safety
+
+Use date-only logic
+
+Normalize to local midnight
+
+No UTC drift
+
+6️⃣ TASK GENERATION RULES
+
+Each generated task must:
+
+Have a unique assigned date
+
+Be editable by user
+
+Default completionStatus = false
+
+Be linked to correct dream & user
+
+No hardcoded task counts.
+
+7️⃣ STRICT CONSTRAINTS
+
+❌ Do NOT change UI
+❌ Do NOT rename dropdown labels visually
+❌ Do NOT break existing dreams
+❌ Do NOT affect personal vs group separation
+
+✅ Logic-only patch
+✅ Backward compatible
+✅ Multi-user safe
+✅ APK safe
+
+8️⃣ FINAL GOAL
+
+After this update:
+
+Weekly = correct task count
+
+Semi-weekly / semi-monthly behave like real life
+
+No over-generation bugs
+
+Dream system is market-ready for APK & Play Store
