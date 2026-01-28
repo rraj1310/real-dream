@@ -34,15 +34,6 @@ const dreamTypes: DreamTypeItem[] = [
     route: "PersonalDreams",
   },
   {
-    type: "challenge",
-    title: "Challenges",
-    subtitle: "REALDREAM CHALLENGE",
-    description: "Compete with others and push your limits. Join challenges or create your own.",
-    icon: "award",
-    gradient: ["#EAB308", "#FCD34D"],
-    route: "ChallengeDreams",
-  },
-  {
     type: "group",
     title: "Group Dreams",
     subtitle: "GROUP REALDREAM",
@@ -50,6 +41,15 @@ const dreamTypes: DreamTypeItem[] = [
     icon: "users",
     gradient: ["#8B5CF6", "#A855F7"],
     route: "GroupDreams",
+  },
+  {
+    type: "challenge",
+    title: "Challenges",
+    subtitle: "REALDREAM CHALLENGE",
+    description: "Compete with others and push your limits. Join challenges or create your own.",
+    icon: "award",
+    gradient: ["#EAB308", "#FCD34D"],
+    route: "ChallengeDreams",
   },
 ];
 
