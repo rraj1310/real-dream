@@ -207,6 +207,7 @@ export default function CreateDreamScreen() {
   const [tempWebDate, setTempWebDate] = useState("");
 
   const [generatedTasks, setGeneratedTasks] = useState<GeneratedTask[]>([]);
+  const [showAllTasks, setShowAllTasks] = useState(false);
 
   useEffect(() => {
     if (route.params?.type) {
@@ -219,8 +220,10 @@ export default function CreateDreamScreen() {
     if (durationNum > 0 && startDate) {
       const tasks = generateTaskDates(startDate, durationNum, durationUnit, recurrence);
       setGeneratedTasks(tasks);
+      setShowAllTasks(false);
     } else {
       setGeneratedTasks([]);
+      setShowAllTasks(false);
     }
   }, [startDate, duration, durationUnit, recurrence]);
 
@@ -514,7 +517,7 @@ export default function CreateDreamScreen() {
             </ThemedText>
             
             <View style={styles.tasksList}>
-              {generatedTasks.slice(0, 10).map((task, index) => (
+              {(showAllTasks ? generatedTasks : generatedTasks.slice(0, 10)).map((task, index) => (
                 <View key={index} style={styles.taskItem}>
                   <View style={styles.taskNumber}>
                     <ThemedText style={styles.taskNumberText}>{index + 1}</ThemedText>
@@ -535,9 +538,20 @@ export default function CreateDreamScreen() {
                 </View>
               ))}
               {generatedTasks.length > 10 ? (
-                <ThemedText type="small" style={styles.moreTasksText}>
-                  +{generatedTasks.length - 10} more tasks...
-                </ThemedText>
+                <Pressable 
+                  onPress={() => setShowAllTasks(!showAllTasks)}
+                  style={styles.moreTasksButton}
+                  testID="button-toggle-tasks"
+                >
+                  <Feather 
+                    name={showAllTasks ? "chevron-up" : "chevron-down"} 
+                    size={16} 
+                    color="#A78BFA" 
+                  />
+                  <ThemedText type="small" style={styles.moreTasksText}>
+                    {showAllTasks ? "Show less" : `+${generatedTasks.length - 10} more tasks...`}
+                  </ThemedText>
+                </Pressable>
               ) : null}
             </View>
           </Animated.View>
@@ -866,10 +880,19 @@ const styles = StyleSheet.create({
     color: "#8B7FC7",
     fontSize: 11,
   },
+  moreTasksButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    backgroundColor: "rgba(139, 127, 199, 0.15)",
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.sm,
+  },
   moreTasksText: {
-    color: "#8B7FC7",
+    color: "#A78BFA",
     textAlign: "center",
-    paddingVertical: Spacing.sm,
   },
   progressInfo: {
     flexDirection: "row",
