@@ -74,8 +74,8 @@ function calculateEndDate(
 
 function generateDailyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  // First task is on COMPLETION of first occurrence (start + 1 day)
-  let currentDate = addDays(normalizeToLocalMidnight(start), 1);
+  // First task = Start Date, then 1 task per day
+  let currentDate = normalizeToLocalMidnight(start);
   let order = 0;
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
@@ -88,8 +88,8 @@ function generateDailyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  // First task is on COMPLETION of first occurrence (start + 7 days)
-  let currentDate = addDays(normalizeToLocalMidnight(start), 7);
+  // First task = Start Date + 6 days, subsequent tasks every 7 days
+  let currentDate = addDays(normalizeToLocalMidnight(start), 6);
   let order = 0;
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
@@ -102,15 +102,17 @@ function generateWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateSemiWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  // First task is on COMPLETION of first occurrence (start + 3 days, then alternate 4/3)
-  let currentDate = addDays(normalizeToLocalMidnight(start), 3);
+  // First two tasks: Start Date + 3 days, Start Date + 6 days
+  // Then repeat the same pattern every week (consistent 3-day / 3-day gap cycle)
+  const startNorm = normalizeToLocalMidnight(start);
   let order = 0;
-  let useFourDays = true; // After first 3-day gap, alternate with 4 days
+  
+  // Generate tasks in 3-day intervals (twice per week)
+  let currentDate = addDays(startNorm, 3);
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
     tasks.push({ date: new Date(currentDate), order: order++ });
-    currentDate = addDays(currentDate, useFourDays ? 4 : 3);
-    useFourDays = !useFourDays;
+    currentDate = addDays(currentDate, 3);
   }
   
   return tasks;
@@ -118,13 +120,14 @@ function generateSemiWeeklyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateMonthlyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
-  // First task is on COMPLETION of first occurrence (start + 1 month)
-  let currentDate = addMonths(normalizeToLocalMidnight(start), 1);
+  // First task = Start Date + 29 days, every next task = +30 days
+  // Clamp to last valid date if month is shorter, leap-year safe
+  let currentDate = addDays(normalizeToLocalMidnight(start), 29);
   let order = 0;
   
   while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
     tasks.push({ date: new Date(currentDate), order: order++ });
-    currentDate = addMonths(currentDate, 1);
+    currentDate = addDays(currentDate, 30);
   }
   
   return tasks;
@@ -132,52 +135,14 @@ function generateMonthlyTasks(start: Date, endDate: Date): TaskDate[] {
 
 function generateSemiMonthlyTasks(start: Date, endDate: Date): TaskDate[] {
   const tasks: TaskDate[] = [];
+  // First task = Start Date + 14 days, every next task = +15 days
+  // Handle month-length variation safely, no date drift
+  let currentDate = addDays(normalizeToLocalMidnight(start), 14);
   let order = 0;
   
-  // Semi-monthly: 1st & 16th of each month
-  // First task is the NEXT 1st or 16th AFTER start date (completion of first occurrence)
-  const startNorm = normalizeToLocalMidnight(start);
-  let year = startNorm.getFullYear();
-  let month = startNorm.getMonth();
-  const startDay = startNorm.getDate();
-  
-  // Find the first task date (next 1st or 16th strictly after start)
-  let firstTaskDate: Date;
-  if (startDay < 16) {
-    // Next occurrence is the 16th of this month
-    firstTaskDate = new Date(year, month, 16);
-  } else {
-    // Next occurrence is the 1st of next month
-    month++;
-    if (month > 11) {
-      month = 0;
-      year++;
-    }
-    firstTaskDate = new Date(year, month, 1);
-  }
-  
-  // Generate tasks starting from first task date
-  let currentYear = firstTaskDate.getFullYear();
-  let currentMonth = firstTaskDate.getMonth();
-  let currentDay = firstTaskDate.getDate(); // Either 1 or 16
-  
-  while (order < 1000) {
-    const taskDate = new Date(currentYear, currentMonth, currentDay);
-    if (taskDate.getTime() > endDate.getTime()) break;
-    
-    tasks.push({ date: normalizeToLocalMidnight(taskDate), order: order++ });
-    
-    // Alternate between 1st and 16th
-    if (currentDay === 1) {
-      currentDay = 16;
-    } else {
-      currentDay = 1;
-      currentMonth++;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
-    }
+  while (currentDate.getTime() <= endDate.getTime() && order < 1000) {
+    tasks.push({ date: new Date(currentDate), order: order++ });
+    currentDate = addDays(currentDate, 15);
   }
   
   return tasks;

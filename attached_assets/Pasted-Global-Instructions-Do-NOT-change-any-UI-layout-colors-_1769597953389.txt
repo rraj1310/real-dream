@@ -1,0 +1,142 @@
+Global Instructions
+
+❌ Do NOT change any UI, layout, colors, fonts, animations, or navigation
+
+✅ Only update field labels, validation logic, task-generation logic
+
+✅ Ensure logic is production-ready, APK-safe, and backend-driven
+
+❌ Do NOT break existing authentication, dreams, or stored data
+
+1️⃣ Field Rename (SAFE CHANGE)
+
+Rename field label:
+
+"Re-Occurrence" → "Occurrence"
+
+No other UI text or layout change
+
+2️⃣ Duration vs Occurrence Validation (STRICT)
+Enforce the following allowed combinations ONLY:
+Duration	Allowed Occurrence
+Days	Daily
+Weeks	Daily, Semi-Weekly, Weekly
+Months	Daily, Semi-Weekly, Weekly, Semi-Monthly, Monthly
+Years	Daily, Semi-Weekly, Weekly, Semi-Monthly, Monthly
+Rules
+
+Disable invalid occurrence options dynamically
+
+Auto-correct occurrence if duration changes
+
+Block form submission if an invalid combination exists
+
+Show user-friendly validation message (logic only, no UI redesign)
+
+3️⃣ Task Creation Logic (CORE FIX)
+General Rule
+
+Tasks must be generated only based on Occurrence
+
+Duration only limits how long tasks repeat, not frequency
+
+No hardcoded task counts
+
+No task should be generated outside duration range
+
+4️⃣ Occurrence → Task Generation Rules (MANDATORY)
+A. Occurrence = Daily
+
+Create 1 task per day
+
+First task = Start Date
+
+Continue daily until duration ends
+
+B. Occurrence = Semi-Weekly
+
+First two tasks:
+
+Start Date + 3 days
+
+Start Date + 6 days
+
+Then repeat the same pattern every week
+
+Maintain consistent 3-day / 3-day gap cycle
+
+C. Occurrence = Weekly
+
+First task = Start Date + 6 days
+
+Subsequent tasks every 7 days
+
+D. Occurrence = Semi-Monthly
+
+First task = Start Date + 14 days
+
+Every next task = +15 days
+
+Handle month-length variation safely
+
+No date drift
+
+E. Occurrence = Monthly
+
+First task = Start Date + 29 days
+
+Every next task = +30 days
+
+Clamp to last valid date if month is shorter
+
+Leap-year safe
+
+5️⃣ Task Count Accuracy (CRITICAL)
+
+Task count must exactly match generated tasks
+
+If task count = 0 → block submission
+
+Prevent:
+
+Weekly duration creating daily tasks
+
+Duplicate task dates
+
+Tasks beyond duration end date
+
+6️⃣ Edge-Case Handling (AUTO)
+
+Implement safeguards for:
+
+Month length differences (28–31)
+
+Leap years
+
+Duration shorter than first occurrence
+
+Start date near month end
+
+Invalid recurrence drift
+
+If an edge case occurs:
+
+Adjust dates logically
+
+Never crash the app
+
+Never create ghost tasks
+
+7️⃣ Stability & Market-Ready Constraints
+
+❌ No mock data
+
+❌ No hardcoded dates
+
+❌ No frontend-only calculations
+
+✅ All logic reusable and deterministic
+
+✅ APK must not crash on launch
+
+✅ Offline-safe failure handling
