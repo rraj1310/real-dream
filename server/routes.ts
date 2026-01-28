@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { verifyIdToken, initializeFirebaseAdmin } from "./firebase-admin";
+import { generateTaskDates, validateDreamFields } from "./task-generator";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "real-dream-secret-key";
 
@@ -471,12 +472,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/dreams", authMiddleware, async (req: AuthRequest, res) => {
     try {
+      const { title, description, type, privacy, startDate, duration, durationUnit, recurrence, tasks: taskTexts } = req.body;
+      
+      const validation = validateDreamFields({
+        title,
+        description,
+        duration,
+        durationUnit,
+        recurrence,
+        startDate,
+      });
+      
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.errors.join(", ") });
+      }
+      
+      let targetDate = req.body.targetDate;
+      if (duration && durationUnit && startDate) {
+        const start = new Date(startDate);
+        switch (durationUnit) {
+          case "days":
+            targetDate = new Date(start.getTime() + duration * 24 * 60 * 60 * 1000);
+            break;
+          case "weeks":
+            targetDate = new Date(start.getTime() + duration * 7 * 24 * 60 * 60 * 1000);
+            break;
+          case "months":
+            targetDate = new Date(start);
+            targetDate.setMonth(targetDate.getMonth() + duration);
+            break;
+          case "years":
+            targetDate = new Date(start);
+            targetDate.setFullYear(targetDate.getFullYear() + duration);
+            break;
+        }
+      }
+      
       const dream = await storage.createDream({
-        ...req.body,
+        title: title.trim(),
+        description: description?.trim() || null,
+        type: type || "personal",
+        privacy: privacy || "public",
+        startDate: startDate ? new Date(startDate) : new Date(),
+        targetDate: targetDate ? new Date(targetDate) : null,
+        duration: duration || null,
+        durationUnit: durationUnit || null,
+        recurrence: recurrence || null,
         userId: req.user!.id,
       });
+      
+      if (duration && durationUnit && recurrence && startDate) {
+        const taskDates = generateTaskDates(
+          new Date(startDate),
+          duration,
+          durationUnit as "days" | "weeks" | "months" | "years",
+          recurrence as "daily" | "weekly" | "bi-weekly" | "monthly" | "bi-monthly"
+        );
+        
+        for (let i = 0; i < taskDates.length; i++) {
+          const taskDate = taskDates[i];
+          const taskText = taskTexts && taskTexts[i] ? taskTexts[i] : "";
+          
+          await storage.createDreamTask({
+            dreamId: dream.id,
+            title: taskText || `Task ${i + 1}`,
+            dueDate: taskDate.date,
+            order: taskDate.order,
+          });
+        }
+      }
+      
       res.status(201).json(dream);
     } catch (error) {
+      console.error("Create dream error:", error);
       res.status(500).json({ error: "Failed to create dream" });
     }
   });
