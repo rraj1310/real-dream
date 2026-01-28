@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { loginSchema, registerSchema } from "@shared/schema";
-import { verifyIdToken, initializeFirebaseAdmin } from "./firebase-admin";
+import { verifyIdToken, initializeFirebaseAdmin } from "./firebaseAdmin";
 import { generateTaskDates, validateDreamFields } from "./task-generator";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "real-dream-secret-key";
