@@ -211,3 +211,12 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Security: Notifications can only be marked read by their owner
 - Security: All user-specific endpoints properly filter by authenticated user ID
 - Market purchase modal with confirmation and real transaction logging
+- January 2026: Dream Creation with Task Auto-Generation
+- CreateDreamScreen redesigned with duration, unit (days/weeks/months/years), and recurrence (daily/weekly/bi-weekly/monthly/bi-monthly) dropdowns
+- Task auto-generation: System generates calendar-like recurring tasks based on duration and recurrence settings
+- Character counters displayed next to field labels (Dream name: 24 max, Description: 60 max)
+- "Apply first task to all" functionality - fills in first task, applies to all generated tasks
+- Preview of first 10 generated tasks with dates, "+N more tasks..." indicator if more exist
+- Robust date calculation handling edge cases (month lengths, leap years, timezone safety, bi-weekly drift prevention)
+- Backend validation: duration must be positive integer, start date cannot be in the past
+- Database schema updated with duration, durationUnit, and recurrence enum fields on dreams table
