@@ -217,6 +217,12 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Character counters displayed next to field labels (Dream name: 24 max, Description: 60 max)
 - "Apply first task to all" functionality - fills in first task, applies to all generated tasks
 - Preview of first 10 generated tasks with dates, "+N more tasks..." indicator if more exist
-- Robust date calculation handling edge cases (month lengths, leap years, timezone safety, bi-weekly drift prevention)
+- Robust date calculation handling edge cases (month lengths, leap years, timezone safety)
 - Backend validation: duration must be positive integer, start date cannot be in the past
 - Database schema updated with duration, durationUnit, and recurrence enum fields on dreams table
+- January 2026: Task Generation Logic Fix (Production-Ready)
+- Fixed task count bug: 1 week + weekly now correctly generates 1 task (not 2)
+- Semi-weekly: Alternating +3/+4 days for twice-per-week scheduling (no drift)
+- Semi-monthly: Calendar-based approach using 15th and last day of each month
+- End date is now exclusive to prevent over-generation of tasks
+- Task counts verified: daily=7/week, weekly=1/week, semi-weekly=2/week, monthly=1/month, semi-monthly=2/month
