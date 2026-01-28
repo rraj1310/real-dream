@@ -24,7 +24,7 @@ if (Platform.OS !== 'web') {
 
 type DreamTypeOption = "personal" | "challenge" | "group";
 type DurationUnit = "days" | "weeks" | "months" | "years";
-type Recurrence = "daily" | "weekly" | "bi-weekly" | "monthly" | "bi-monthly";
+type Recurrence = "daily" | "weekly" | "semi-weekly" | "monthly" | "semi-monthly";
 
 interface GeneratedTask {
   date: Date;
@@ -76,9 +76,9 @@ function getNextTaskDate(currentDate: Date, recurrence: Recurrence): Date {
   switch (recurrence) {
     case "daily": return addDays(current, 1);
     case "weekly": return addDays(current, 7);
-    case "bi-weekly": return addDays(current, 14);
+    case "semi-weekly": return addDays(current, 3);
     case "monthly": return addMonths(current, 1);
-    case "bi-monthly": return addMonths(current, 2);
+    case "semi-monthly": return addDays(current, 15);
     default: return addDays(current, 1);
   }
 }
@@ -273,9 +273,9 @@ export default function CreateDreamScreen() {
   const recurrenceOptions: { value: Recurrence; label: string }[] = [
     { value: "daily", label: "Daily" },
     { value: "weekly", label: "Weekly" },
-    { value: "bi-weekly", label: "Bi-Weekly" },
+    { value: "semi-weekly", label: "Semi-Weekly" },
     { value: "monthly", label: "Monthly" },
-    { value: "bi-monthly", label: "Bi-Monthly" },
+    { value: "semi-monthly", label: "Semi-Monthly" },
   ];
 
   const targetDate = useMemo(() => {

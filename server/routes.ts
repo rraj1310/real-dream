@@ -526,7 +526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           new Date(startDate),
           duration,
           durationUnit as "days" | "weeks" | "months" | "years",
-          recurrence as "daily" | "weekly" | "bi-weekly" | "monthly" | "bi-monthly"
+          recurrence as "daily" | "weekly" | "semi-weekly" | "monthly" | "semi-monthly"
         );
         
         for (let i = 0; i < taskDates.length; i++) {

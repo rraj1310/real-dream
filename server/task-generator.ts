@@ -1,5 +1,5 @@
 type DurationUnit = "days" | "weeks" | "months" | "years";
-type Recurrence = "daily" | "weekly" | "bi-weekly" | "monthly" | "bi-monthly";
+type Recurrence = "daily" | "weekly" | "semi-weekly" | "monthly" | "semi-monthly";
 
 interface TaskDate {
   date: Date;
@@ -83,12 +83,12 @@ function getNextTaskDate(
       return addDays(current, 1);
     case "weekly":
       return addDays(current, 7);
-    case "bi-weekly":
-      return addDays(current, 14);
+    case "semi-weekly":
+      return addDays(current, 3);
     case "monthly":
       return addMonths(current, 1);
-    case "bi-monthly":
-      return addMonths(current, 2);
+    case "semi-monthly":
+      return addDays(current, 15);
     default:
       return addDays(current, 1);
   }
@@ -158,9 +158,9 @@ export function validateDreamFields(data: {
     errors.push("Duration unit must be days, weeks, months, or years");
   }
   
-  const validRecurrences = ["daily", "weekly", "bi-weekly", "monthly", "bi-monthly"];
+  const validRecurrences = ["daily", "weekly", "semi-weekly", "monthly", "semi-monthly"];
   if (data.recurrence && !validRecurrences.includes(data.recurrence)) {
-    errors.push("Recurrence must be daily, weekly, bi-weekly, monthly, or bi-monthly");
+    errors.push("Recurrence must be daily, weekly, semi-weekly, monthly, or semi-monthly");
   }
   
   if (data.startDate) {

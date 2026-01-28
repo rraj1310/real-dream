@@ -41,9 +41,9 @@ export const durationUnitEnum = pgEnum("duration_unit", [
 export const recurrenceEnum = pgEnum("recurrence", [
   "daily",
   "weekly",
-  "bi-weekly",
+  "semi-weekly",
   "monthly",
-  "bi-monthly",
+  "semi-monthly",
 ]);
 
 export const notificationTypeEnum = pgEnum("notification_type", [
