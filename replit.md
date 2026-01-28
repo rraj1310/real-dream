@@ -234,13 +234,14 @@ Real Dream is a comprehensive goal-tracking and dream achievement mobile app bui
 - Recurrence picker only shows valid options based on selected duration unit
 - "+N more tasks" button now toggles to show all tasks (with chevron icon animation)
 - "Create Another Dream" button added to DreamDetailScreen for quick dream creation workflow
-- January 2026: Task Scheduling Algorithm Update
-- First task now scheduled on COMPLETION DATE of first occurrence, not start date
-- Example: Start Jan 28 + weekly → First task Feb 4 (not Jan 28)
-- Daily: First task = start + 1 day
-- Weekly: First task = start + 7 days
-- Semi-weekly: First task = start + 3 days, then alternating 4/3 day gaps
-- Monthly: First task = start + 1 month
-- Semi-monthly: 1st & 16th of each month (first task = next 1st or 16th after start)
+- January 2026: Task Scheduling Algorithm Update (Production-Ready)
+- Field renamed: "Re-Occurrence" → "Occurrence"
+- Duration vs Occurrence validation: Days→Daily only, Weeks→Daily/Semi-Weekly/Weekly, Months/Years→ALL options
+- Daily: First task = Start Date, 1 task per day
+- Weekly: First task = Start Date + 6 days, then every 7 days
+- Semi-Weekly: First task = Start Date + 3 days, then every 3 days (consistent 3-day gap cycle)
+- Monthly: First task = Start Date + 29 days, then every 30 days
+- Semi-Monthly: First task = Start Date + 14 days, then every 15 days
 - Task count display shows "X tasks will be created based on your schedule"
 - Validation blocks submission if task count = 0
+- No hardcoded dates, all logic deterministic and reusable
