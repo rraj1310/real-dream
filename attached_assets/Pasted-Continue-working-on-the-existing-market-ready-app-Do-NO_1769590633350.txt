@@ -1,0 +1,193 @@
+Continue working on the existing market-ready app.
+Do NOT change any UI, layout, colors, spacing, typography, or theme.
+Only update logic, validation, and backend behavior for Dream Creation & Tasks.
+
+1️⃣ DREAM CREATION FIELDS (STRICT)
+
+Implement or validate the following fields:
+
+1. Dream Name
+
+Text input
+
+Max length: 24 characters
+
+Allowed: text, numbers, special characters
+
+Required
+
+2. Dream Description
+
+Text input
+
+Max length: 60 characters
+
+Allowed: text, numbers, special characters
+
+Optional
+
+3. Duration
+
+Positive integer input only
+
+Unit dropdown:
+
+days
+
+weeks
+
+months
+
+years
+
+4. Re-occurrence
+
+Dropdown values:
+
+daily
+
+weekly
+
+bi-weekly
+
+monthly
+
+bi-monthly
+
+5. Start Date
+
+Calendar date picker
+
+Past dates not allowed
+
+Required
+
+2️⃣ TASK AUTO-GENERATION (MANDATORY)
+
+Automatically generate N tasks based on:
+
+Duration value
+
+Duration unit
+
+Re-occurrence type
+
+Start Date
+
+Each task must:
+
+Have an auto-assigned date
+
+Have an editable task text field (blank by default)
+
+Tasks must stop exactly at the duration end.
+
+3️⃣ TASK INPUT BEHAVIOR
+
+User can fill only the first task text
+
+Provide option: “Apply first task to all”
+
+Copies first task text to all remaining tasks
+
+Users can still manually edit any task afterward
+
+4️⃣ DATE CALCULATION FORMULA TABLE (IMPLEMENT EXACTLY)
+🔹 BASE INTERVAL (per re-occurrence)
+Re-occurrence	Interval Rule
+daily	+1 day
+weekly	+7 days
+bi-weekly	+14 days
+monthly	+1 calendar month
+bi-monthly	+2 calendar months
+🔹 DURATION LIMIT (stop condition)
+Duration Unit	End Rule
+days	startDate + N days
+weeks	startDate + (N × 7) days
+months	startDate + N calendar months
+years	startDate + N calendar years
+
+Tasks must not exceed the calculated end date.
+
+5️⃣ EDGE-CASE HANDLING (CRITICAL)
+✅ Month Length Differences
+
+If start date is 29th / 30th / 31st
+
+And target month has fewer days:
+
+Use last valid day of that month
+
+Example:
+
+Jan 31 → Feb task = Feb 28 (or Feb 29 in leap year)
+
+✅ Leap Year Handling
+
+February must respect leap years
+
+Feb 29 only exists in leap years
+
+Use standard Gregorian calendar rules
+
+✅ Bi-Weekly Drift Prevention
+
+Bi-weekly tasks must:
+
+Always be exactly 14 days apart
+
+Never realign to calendar weeks
+
+Avoid cumulative drift
+
+✅ Timezone Safety
+
+Use date-only logic (no time offsets)
+
+Normalize all dates to local midnight
+
+Avoid UTC conversion bugs
+
+6️⃣ BACKEND & DATA RULES
+
+No hardcoded task counts
+
+Tasks stored per user
+
+Each task must store:
+
+dreamId
+
+taskDate
+
+taskText
+
+completionStatus (default: false)
+
+Validate all inputs before saving
+
+Handle invalid combinations gracefully (no crashes)
+
+7️⃣ STRICT CONSTRAINTS
+
+❌ Do NOT change UI
+❌ Do NOT redesign screens
+❌ Do NOT mix personal & group dreams
+❌ Do NOT mock backend logic
+
+✅ Logic-only update
+✅ Multi-user safe
+✅ APK-safe
+✅ Market-ready
+
+8️⃣ FINAL GOAL
+
+After this patch:
+
+Dream creation works for all valid combinations
+
+Task dates are correct, predictable, and stable
+
+Edge cases are handled cleanly
+
+App remains production-ready

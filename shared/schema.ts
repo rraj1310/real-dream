@@ -31,6 +31,21 @@ export const dreamPrivacyEnum = pgEnum("dream_privacy", [
   "private",
 ]);
 
+export const durationUnitEnum = pgEnum("duration_unit", [
+  "days",
+  "weeks",
+  "months",
+  "years",
+]);
+
+export const recurrenceEnum = pgEnum("recurrence", [
+  "daily",
+  "weekly",
+  "bi-weekly",
+  "monthly",
+  "bi-monthly",
+]);
+
 export const notificationTypeEnum = pgEnum("notification_type", [
   "achievement",
   "social",
@@ -92,6 +107,9 @@ export const dreams = pgTable("dreams", {
   imageUrl: text("image_url"),
   startDate: timestamp("start_date"),
   targetDate: timestamp("target_date"),
+  duration: integer("duration"),
+  durationUnit: durationUnitEnum("duration_unit"),
+  recurrence: recurrenceEnum("recurrence"),
   progress: integer("progress").default(0),
   isCompleted: boolean("is_completed").default(false),
   completedAt: timestamp("completed_at"),
