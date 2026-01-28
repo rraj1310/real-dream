@@ -46,7 +46,7 @@ module.exports = {
     },
     extra: {
       eas: {
-        projectId: process.env.EAS_PROJECT_ID || "real-dream-app"
+        projectId: process.env.EAS_PROJECT_ID
       },
       firebaseApiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN,
