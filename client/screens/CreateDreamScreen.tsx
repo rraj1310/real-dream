@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { View, StyleSheet, Pressable, TextInput, ScrollView, ActivityIndicator, Platform, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -22,11 +22,79 @@ if (Platform.OS !== 'web') {
 }
 
 type DreamTypeOption = "personal" | "challenge" | "group";
+type DurationUnit = "days" | "weeks" | "months" | "years";
+type Recurrence = "daily" | "weekly" | "bi-weekly" | "monthly" | "bi-monthly";
 
-interface TaskItem {
-  id: string;
-  title: string;
-  dueDate: Date | null;
+interface GeneratedTask {
+  date: Date;
+  text: string;
+  order: number;
+}
+
+function normalizeToLocalMidnight(date: Date): Date {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+}
+
+function addMonths(date: Date, months: number): Date {
+  const result = new Date(date);
+  const originalDay = result.getDate();
+  result.setMonth(result.getMonth() + months);
+  if (result.getDate() !== originalDay) {
+    result.setDate(0);
+  }
+  return normalizeToLocalMidnight(result);
+}
+
+function addYears(date: Date, years: number): Date {
+  const result = new Date(date);
+  result.setFullYear(result.getFullYear() + years);
+  return normalizeToLocalMidnight(result);
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return normalizeToLocalMidnight(result);
+}
+
+function calculateEndDate(startDate: Date, duration: number, durationUnit: DurationUnit): Date {
+  const start = normalizeToLocalMidnight(startDate);
+  switch (durationUnit) {
+    case "days": return addDays(start, duration);
+    case "weeks": return addDays(start, duration * 7);
+    case "months": return addMonths(start, duration);
+    case "years": return addYears(start, duration);
+    default: return addDays(start, duration);
+  }
+}
+
+function getNextTaskDate(currentDate: Date, recurrence: Recurrence): Date {
+  const current = normalizeToLocalMidnight(currentDate);
+  switch (recurrence) {
+    case "daily": return addDays(current, 1);
+    case "weekly": return addDays(current, 7);
+    case "bi-weekly": return addDays(current, 14);
+    case "monthly": return addMonths(current, 1);
+    case "bi-monthly": return addMonths(current, 2);
+    default: return addDays(current, 1);
+  }
+}
+
+function generateTaskDates(startDate: Date, duration: number, durationUnit: DurationUnit, recurrence: Recurrence): GeneratedTask[] {
+  if (duration <= 0) return [];
+  const start = normalizeToLocalMidnight(startDate);
+  const endDate = calculateEndDate(start, duration, durationUnit);
+  const tasks: GeneratedTask[] = [];
+  let currentDate = start;
+  let order = 0;
+  while (currentDate.getTime() <= endDate.getTime()) {
+    tasks.push({ date: new Date(currentDate), text: "", order: order++ });
+    currentDate = getNextTaskDate(currentDate, recurrence);
+    if (order > 1000) break;
+  }
+  return tasks;
 }
 
 export default function CreateDreamScreen() {
@@ -43,23 +111,35 @@ export default function CreateDreamScreen() {
   const [error, setError] = useState("");
   
   const [startDate, setStartDate] = useState<Date>(new Date());
-  const [targetDate, setTargetDate] = useState<Date>(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
   const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showTargetPicker, setShowTargetPicker] = useState(false);
   
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskDueDate, setNewTaskDueDate] = useState<Date | null>(null);
-  const [showTaskDatePicker, setShowTaskDatePicker] = useState(false);
+  const [duration, setDuration] = useState<string>("4");
+  const [durationUnit, setDurationUnit] = useState<DurationUnit>("weeks");
+  const [recurrence, setRecurrence] = useState<Recurrence>("weekly");
   
-  const [webDateModal, setWebDateModal] = useState<'start' | 'target' | 'task' | null>(null);
+  const [showDurationUnitPicker, setShowDurationUnitPicker] = useState(false);
+  const [showRecurrencePicker, setShowRecurrencePicker] = useState(false);
+  
+  const [webDateModal, setWebDateModal] = useState<'start' | null>(null);
   const [tempWebDate, setTempWebDate] = useState("");
+
+  const [generatedTasks, setGeneratedTasks] = useState<GeneratedTask[]>([]);
 
   useEffect(() => {
     if (route.params?.type) {
       setSelectedType(route.params.type);
     }
   }, [route.params?.type]);
+
+  useEffect(() => {
+    const durationNum = parseInt(duration, 10);
+    if (durationNum > 0 && startDate) {
+      const tasks = generateTaskDates(startDate, durationNum, durationUnit, recurrence);
+      setGeneratedTasks(tasks);
+    } else {
+      setGeneratedTasks([]);
+    }
+  }, [startDate, duration, durationUnit, recurrence]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -69,15 +149,12 @@ export default function CreateDreamScreen() {
     return date.toISOString().split('T')[0];
   };
 
-  const handleDateButtonPress = (type: 'start' | 'target' | 'task') => {
+  const handleDateButtonPress = () => {
     if (Platform.OS === 'web') {
-      const dateToUse = type === 'start' ? startDate : type === 'target' ? targetDate : (newTaskDueDate || new Date());
-      setTempWebDate(formatDateForInput(dateToUse));
-      setWebDateModal(type);
+      setTempWebDate(formatDateForInput(startDate));
+      setWebDateModal('start');
     } else {
-      if (type === 'start') setShowStartPicker(true);
-      else if (type === 'target') setShowTargetPicker(true);
-      else setShowTaskDatePicker(true);
+      setShowStartPicker(true);
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
@@ -85,9 +162,13 @@ export default function CreateDreamScreen() {
   const handleWebDateConfirm = () => {
     const newDate = new Date(tempWebDate);
     if (!isNaN(newDate.getTime())) {
-      if (webDateModal === 'start') setStartDate(newDate);
-      else if (webDateModal === 'target') setTargetDate(newDate);
-      else if (webDateModal === 'task') setNewTaskDueDate(newDate);
+      const today = normalizeToLocalMidnight(new Date());
+      const selected = normalizeToLocalMidnight(newDate);
+      if (selected.getTime() >= today.getTime()) {
+        setStartDate(newDate);
+      } else {
+        setError("Start date cannot be in the past");
+      }
     }
     setWebDateModal(null);
   };
@@ -99,49 +180,51 @@ export default function CreateDreamScreen() {
     }
   };
 
-  const onTargetDateChange = (event: any, selectedDate?: Date) => {
-    setShowTargetPicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setTargetDate(selectedDate);
-    }
+  const handleDurationChange = (text: string) => {
+    const numericText = text.replace(/[^0-9]/g, '');
+    setDuration(numericText);
   };
 
-  const onTaskDateChange = (event: any, selectedDate?: Date) => {
-    setShowTaskDatePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setNewTaskDueDate(selectedDate);
-    }
+  const updateTaskText = (index: number, text: string) => {
+    setGeneratedTasks(prev => prev.map((task, i) => 
+      i === index ? { ...task, text } : task
+    ));
   };
 
-  const addTask = () => {
-    if (!newTaskTitle.trim()) return;
+  const applyFirstTaskToAll = () => {
+    if (generatedTasks.length === 0) return;
+    const firstTaskText = generatedTasks[0].text;
+    if (!firstTaskText.trim()) return;
     
-    const newTask: TaskItem = {
-      id: Date.now().toString(),
-      title: newTaskTitle.trim(),
-      dueDate: newTaskDueDate,
-    };
-    
-    setTasks([...tasks, newTask]);
-    setNewTaskTitle("");
-    setNewTaskDueDate(null);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  const removeTask = (taskId: string) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setGeneratedTasks(prev => prev.map(task => ({ ...task, text: firstTaskText })));
   };
 
   const handleCreate = async () => {
+    setError("");
+    
     if (!title.trim()) {
-      setError("Please enter a title for your dream");
+      setError("Please enter a dream name");
       return;
     }
+    if (title.length > 24) {
+      setError("Dream name must be 24 characters or less");
+      return;
+    }
+    if (description && description.length > 60) {
+      setError("Description must be 60 characters or less");
+      return;
+    }
+    
+    const durationNum = parseInt(duration, 10);
+    if (!durationNum || durationNum <= 0) {
+      setError("Duration must be a positive number");
+      return;
+    }
+    
     if (!token) return;
 
     setIsLoading(true);
-    setError("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
@@ -156,28 +239,15 @@ export default function CreateDreamScreen() {
           description: description.trim() || null,
           type: selectedType,
           startDate: startDate.toISOString(),
-          targetDate: targetDate.toISOString(),
+          duration: durationNum,
+          durationUnit: durationUnit,
+          recurrence: recurrence,
+          tasks: generatedTasks.map(t => t.text),
         }),
       });
 
       if (response.ok) {
         const dream = await response.json();
-        
-        for (const task of tasks) {
-          await fetch(new URL(`/api/dreams/${dream.id}/tasks`, getApiUrl()).toString(), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              title: task.title,
-              dueDate: task.dueDate?.toISOString() || null,
-              order: tasks.indexOf(task),
-            }),
-          });
-        }
-        
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         navigation.navigate("DreamDetail", { dreamId: dream.id });
       } else {
@@ -190,6 +260,29 @@ export default function CreateDreamScreen() {
       setIsLoading(false);
     }
   };
+
+  const durationUnitOptions: { value: DurationUnit; label: string }[] = [
+    { value: "days", label: "Days" },
+    { value: "weeks", label: "Weeks" },
+    { value: "months", label: "Months" },
+    { value: "years", label: "Years" },
+  ];
+
+  const recurrenceOptions: { value: Recurrence; label: string }[] = [
+    { value: "daily", label: "Daily" },
+    { value: "weekly", label: "Weekly" },
+    { value: "bi-weekly", label: "Bi-Weekly" },
+    { value: "monthly", label: "Monthly" },
+    { value: "bi-monthly", label: "Bi-Monthly" },
+  ];
+
+  const targetDate = useMemo(() => {
+    const durationNum = parseInt(duration, 10);
+    if (durationNum > 0) {
+      return calculateEndDate(startDate, durationNum, durationUnit);
+    }
+    return null;
+  }, [startDate, duration, durationUnit]);
 
   return (
     <GalaxyBackground>
@@ -212,63 +305,96 @@ export default function CreateDreamScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <ThemedText type="small" style={styles.label}>
-            DREAM TITLE
-          </ThemedText>
+          <View style={styles.labelRow}>
+            <ThemedText type="small" style={styles.label}>DREAM NAME</ThemedText>
+            <ThemedText type="small" style={styles.charCount}>{title.length}/24</ThemedText>
+          </View>
           <TextInput
             style={styles.input}
             value={title}
-            onChangeText={setTitle}
+            onChangeText={(text) => setTitle(text.slice(0, 24))}
             placeholder="e.g., Learn to play guitar"
             placeholderTextColor="#8B7FC7"
+            maxLength={24}
             testID="input-dream-title"
           />
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(150).springify()}>
-          <ThemedText type="small" style={styles.label}>
-            DESCRIPTION (OPTIONAL)
-          </ThemedText>
+          <View style={styles.labelRow}>
+            <ThemedText type="small" style={styles.label}>DESCRIPTION (OPTIONAL)</ThemedText>
+            <ThemedText type="small" style={styles.charCount}>{description.length}/60</ThemedText>
+          </View>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={description}
-            onChangeText={setDescription}
-            placeholder="Describe your dream in detail..."
+            onChangeText={(text) => setDescription(text.slice(0, 60))}
+            placeholder="Describe your dream..."
             placeholderTextColor="#8B7FC7"
             multiline
-            numberOfLines={4}
+            numberOfLines={2}
+            maxLength={60}
             testID="input-dream-description"
           />
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200).springify()}>
-          <ThemedText type="small" style={styles.label}>
-            TIMELINE
-          </ThemedText>
-          <View style={styles.dateRow}>
-            <Pressable 
-              style={styles.dateButton}
-              onPress={() => handleDateButtonPress('start')}
-              testID="button-start-date"
+          <ThemedText type="small" style={styles.label}>DURATION</ThemedText>
+          <View style={styles.durationRow}>
+            <TextInput
+              style={[styles.input, styles.durationInput]}
+              value={duration}
+              onChangeText={handleDurationChange}
+              placeholder="4"
+              placeholderTextColor="#8B7FC7"
+              keyboardType="number-pad"
+              testID="input-duration"
+            />
+            <Pressable
+              style={styles.dropdownButton}
+              onPress={() => setShowDurationUnitPicker(true)}
+              testID="button-duration-unit"
             >
-              <Feather name="calendar" size={18} color="#A78BFA" />
-              <View>
-                <ThemedText type="small" style={styles.dateLabel}>Start Date</ThemedText>
-                <ThemedText style={styles.dateValue}>{formatDate(startDate)}</ThemedText>
-              </View>
-            </Pressable>
-            <Pressable 
-              style={styles.dateButton}
-              onPress={() => handleDateButtonPress('target')}
-              testID="button-target-date"
-            >
-              <Feather name="flag" size={18} color="#22C55E" />
-              <View>
-                <ThemedText type="small" style={styles.dateLabel}>Target Date</ThemedText>
-                <ThemedText style={styles.dateValue}>{formatDate(targetDate)}</ThemedText>
-              </View>
+              <ThemedText style={styles.dropdownText}>
+                {durationUnitOptions.find(o => o.value === durationUnit)?.label}
+              </ThemedText>
+              <Feather name="chevron-down" size={16} color="#A78BFA" />
             </Pressable>
           </View>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(250).springify()}>
+          <ThemedText type="small" style={styles.label}>RE-OCCURRENCE</ThemedText>
+          <Pressable
+            style={styles.dropdownButtonFull}
+            onPress={() => setShowRecurrencePicker(true)}
+            testID="button-recurrence"
+          >
+            <ThemedText style={styles.dropdownText}>
+              {recurrenceOptions.find(o => o.value === recurrence)?.label}
+            </ThemedText>
+            <Feather name="chevron-down" size={16} color="#A78BFA" />
+          </Pressable>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <ThemedText type="small" style={styles.label}>START DATE</ThemedText>
+          <Pressable 
+            style={styles.dateButtonFull}
+            onPress={handleDateButtonPress}
+            testID="button-start-date"
+          >
+            <Feather name="calendar" size={18} color="#A78BFA" />
+            <ThemedText style={styles.dateValue}>{formatDate(startDate)}</ThemedText>
+          </Pressable>
+          {targetDate ? (
+            <View style={styles.targetDateInfo}>
+              <Feather name="flag" size={14} color="#22C55E" />
+              <ThemedText type="small" style={styles.targetDateText}>
+                Target completion: {formatDate(targetDate)}
+              </ThemedText>
+            </View>
+          ) : null}
         </Animated.View>
 
         {Platform.OS !== 'web' && showStartPicker && DateTimePicker ? (
@@ -281,106 +407,68 @@ export default function CreateDreamScreen() {
           />
         ) : null}
 
-        {Platform.OS !== 'web' && showTargetPicker && DateTimePicker ? (
-          <DateTimePicker
-            value={targetDate}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onTargetDateChange}
-            minimumDate={startDate}
-          />
-        ) : null}
-
-        <Animated.View entering={FadeInDown.delay(250).springify()}>
-          <ThemedText type="small" style={styles.label}>
-            MILESTONES / TASKS
-          </ThemedText>
-          <ThemedText type="small" style={styles.helperText}>
-            Add tasks to track your progress (optional)
-          </ThemedText>
-          
-          <View style={styles.addTaskContainer}>
-            <TextInput
-              style={[styles.input, styles.taskInput]}
-              value={newTaskTitle}
-              onChangeText={setNewTaskTitle}
-              placeholder="Add a milestone..."
-              placeholderTextColor="#8B7FC7"
-              testID="input-new-task"
-            />
-            <Pressable 
-              style={styles.taskDateButton}
-              onPress={() => handleDateButtonPress('task')}
-              testID="button-task-date"
-            >
-              <Feather 
-                name="calendar" 
-                size={18} 
-                color={newTaskDueDate ? "#22C55E" : "#8B7FC7"} 
-              />
-            </Pressable>
-            <Pressable 
-              style={styles.addTaskButton}
-              onPress={addTask}
-              testID="button-add-task"
-            >
-              <Feather name="plus" size={20} color="#FFFFFF" />
-            </Pressable>
-          </View>
-
-          {newTaskDueDate ? (
-            <ThemedText type="small" style={styles.selectedDateText}>
-              Due: {formatDate(newTaskDueDate)}
+        {generatedTasks.length > 0 ? (
+          <Animated.View entering={FadeInDown.delay(350).springify()}>
+            <View style={styles.tasksHeader}>
+              <ThemedText type="small" style={styles.label}>
+                GENERATED TASKS ({generatedTasks.length})
+              </ThemedText>
+              {generatedTasks[0]?.text.trim() ? (
+                <Pressable 
+                  onPress={applyFirstTaskToAll}
+                  style={styles.applyAllButton}
+                  testID="button-apply-all"
+                >
+                  <Feather name="copy" size={14} color="#A78BFA" />
+                  <ThemedText type="small" style={styles.applyAllText}>
+                    Apply to all
+                  </ThemedText>
+                </Pressable>
+              ) : null}
+            </View>
+            <ThemedText type="small" style={styles.helperText}>
+              Fill in the first task, then tap "Apply to all" to copy it
             </ThemedText>
-          ) : null}
-
-          {Platform.OS !== 'web' && showTaskDatePicker && DateTimePicker ? (
-            <DateTimePicker
-              value={newTaskDueDate || new Date()}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onTaskDateChange}
-              minimumDate={startDate}
-              maximumDate={targetDate}
-            />
-          ) : null}
-
-          {tasks.length > 0 ? (
+            
             <View style={styles.tasksList}>
-              {tasks.map((task, index) => (
-                <View key={task.id} style={styles.taskItem}>
+              {generatedTasks.slice(0, 10).map((task, index) => (
+                <View key={index} style={styles.taskItem}>
                   <View style={styles.taskNumber}>
                     <ThemedText style={styles.taskNumberText}>{index + 1}</ThemedText>
                   </View>
-                  <View style={styles.taskInfo}>
-                    <ThemedText style={styles.taskTitle}>{task.title}</ThemedText>
-                    {task.dueDate ? (
-                      <ThemedText type="small" style={styles.taskDueDate}>
-                        Due: {formatDate(task.dueDate)}
-                      </ThemedText>
-                    ) : null}
+                  <View style={styles.taskContent}>
+                    <TextInput
+                      style={styles.taskInput}
+                      value={task.text}
+                      onChangeText={(text) => updateTaskText(index, text)}
+                      placeholder="Enter task description..."
+                      placeholderTextColor="#8B7FC7"
+                      testID={`input-task-${index}`}
+                    />
+                    <ThemedText type="small" style={styles.taskDate}>
+                      {formatDate(task.date)}
+                    </ThemedText>
                   </View>
-                  <Pressable 
-                    onPress={() => removeTask(task.id)}
-                    style={styles.removeTaskButton}
-                  >
-                    <Feather name="x" size={16} color="#EF4444" />
-                  </Pressable>
                 </View>
               ))}
+              {generatedTasks.length > 10 ? (
+                <ThemedText type="small" style={styles.moreTasksText}>
+                  +{generatedTasks.length - 10} more tasks...
+                </ThemedText>
+              ) : null}
             </View>
-          ) : null}
-        </Animated.View>
+          </Animated.View>
+        ) : null}
 
         {error ? (
           <ThemedText type="small" style={styles.errorText}>{error}</ThemedText>
         ) : null}
 
-        <Animated.View entering={FadeInDown.delay(300).springify()}>
+        <Animated.View entering={FadeInDown.delay(400).springify()}>
           <View style={styles.progressInfo}>
             <Feather name="info" size={16} color="#A78BFA" />
             <ThemedText type="small" style={styles.progressInfoText}>
-              Your progress will be calculated based on completed tasks
+              {generatedTasks.length} tasks will be created based on your schedule
             </ThemedText>
           </View>
           
@@ -413,11 +501,7 @@ export default function CreateDreamScreen() {
           onPress={() => setWebDateModal(null)}
         >
           <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
-            <ThemedText type="h3" style={styles.modalTitle}>
-              {webDateModal === 'start' ? 'Select Start Date' : 
-               webDateModal === 'target' ? 'Select Target Date' : 
-               'Select Due Date'}
-            </ThemedText>
+            <ThemedText type="h3" style={styles.modalTitle}>Select Start Date</ThemedText>
             
             <TextInput
               style={styles.webDateInput}
@@ -430,7 +514,7 @@ export default function CreateDreamScreen() {
             />
             
             <ThemedText type="small" style={styles.dateHelperText}>
-              Enter date in format: YYYY-MM-DD (e.g., 2026-02-15)
+              Enter date in format: YYYY-MM-DD
             </ThemedText>
 
             <View style={styles.modalButtons}>
@@ -450,6 +534,86 @@ export default function CreateDreamScreen() {
               </Button>
             </View>
           </Pressable>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showDurationUnitPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDurationUnitPicker(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={() => setShowDurationUnitPicker(false)}
+        >
+          <View style={styles.pickerModalContent}>
+            <ThemedText type="h4" style={styles.pickerTitle}>Duration Unit</ThemedText>
+            {durationUnitOptions.map(option => (
+              <Pressable
+                key={option.value}
+                style={[
+                  styles.pickerOption,
+                  durationUnit === option.value && styles.pickerOptionSelected,
+                ]}
+                onPress={() => {
+                  setDurationUnit(option.value);
+                  setShowDurationUnitPicker(false);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <ThemedText style={[
+                  styles.pickerOptionText,
+                  durationUnit === option.value && styles.pickerOptionTextSelected,
+                ]}>
+                  {option.label}
+                </ThemedText>
+                {durationUnit === option.value ? (
+                  <Feather name="check" size={18} color="#8B5CF6" />
+                ) : null}
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showRecurrencePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRecurrencePicker(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={() => setShowRecurrencePicker(false)}
+        >
+          <View style={styles.pickerModalContent}>
+            <ThemedText type="h4" style={styles.pickerTitle}>Re-occurrence</ThemedText>
+            {recurrenceOptions.map(option => (
+              <Pressable
+                key={option.value}
+                style={[
+                  styles.pickerOption,
+                  recurrence === option.value && styles.pickerOptionSelected,
+                ]}
+                onPress={() => {
+                  setRecurrence(option.value);
+                  setShowRecurrencePicker(false);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <ThemedText style={[
+                  styles.pickerOptionText,
+                  recurrence === option.value && styles.pickerOptionTextSelected,
+                ]}>
+                  {option.label}
+                </ThemedText>
+                {recurrence === option.value ? (
+                  <Feather name="check" size={18} color="#8B5CF6" />
+                ) : null}
+              </Pressable>
+            ))}
+          </View>
         </Pressable>
       </Modal>
     </GalaxyBackground>
@@ -473,11 +637,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#C4B5FD",
   },
+  labelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.sm,
+  },
   label: {
     fontWeight: "600",
     letterSpacing: 0.5,
     marginBottom: Spacing.sm,
     color: "#C4B5FD",
+  },
+  charCount: {
+    color: "#8B7FC7",
+    marginBottom: Spacing.sm,
   },
   helperText: {
     color: "#8B7FC7",
@@ -493,58 +667,84 @@ const styles = StyleSheet.create({
     borderColor: "rgba(139, 127, 199, 0.3)",
   },
   textArea: {
-    minHeight: 80,
+    minHeight: 60,
     textAlignVertical: "top",
   },
-  dateRow: {
+  durationRow: {
     flexDirection: "row",
     gap: Spacing.md,
   },
-  dateButton: {
+  durationInput: {
     flex: 1,
+    textAlign: "center",
+  },
+  dropdownButton: {
+    flex: 2,
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.sm,
+    justifyContent: "space-between",
     backgroundColor: "rgba(45, 39, 82, 0.6)",
     borderRadius: BorderRadius.sm,
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderWidth: 1,
     borderColor: "rgba(139, 127, 199, 0.3)",
   },
-  dateLabel: {
-    color: "#8B7FC7",
-    fontSize: 10,
+  dropdownButtonFull: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: "rgba(139, 127, 199, 0.3)",
+  },
+  dropdownText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+  },
+  dateButtonFull: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    backgroundColor: "rgba(45, 39, 82, 0.6)",
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: "rgba(139, 127, 199, 0.3)",
   },
   dateValue: {
     color: "#FFFFFF",
-    fontSize: 13,
+    fontSize: 16,
   },
-  addTaskContainer: {
+  targetDateInfo: {
     flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.sm,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+  },
+  targetDateText: {
+    color: "#22C55E",
+  },
+  tasksHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
-  taskInput: {
-    flex: 1,
+  applyAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    backgroundColor: "rgba(139, 92, 246, 0.2)",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
   },
-  taskDateButton: {
-    backgroundColor: "rgba(45, 39, 82, 0.6)",
-    padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    borderColor: "rgba(139, 127, 199, 0.3)",
-  },
-  addTaskButton: {
-    backgroundColor: "#8B5CF6",
-    padding: Spacing.md,
-    borderRadius: BorderRadius.sm,
-  },
-  selectedDateText: {
-    color: "#22C55E",
-    marginTop: Spacing.xs,
+  applyAllText: {
+    color: "#A78BFA",
   },
   tasksList: {
-    marginTop: Spacing.md,
     gap: Spacing.sm,
   },
   taskItem: {
@@ -558,9 +758,9 @@ const styles = StyleSheet.create({
     borderColor: "rgba(139, 127, 199, 0.2)",
   },
   taskNumber: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: "#8B5CF6",
     alignItems: "center",
     justifyContent: "center",
@@ -570,20 +770,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  taskInfo: {
+  taskContent: {
     flex: 1,
   },
-  taskTitle: {
+  taskInput: {
     color: "#FFFFFF",
     fontSize: 14,
+    padding: 0,
+    marginBottom: 2,
   },
-  taskDueDate: {
+  taskDate: {
     color: "#8B7FC7",
     fontSize: 11,
-    marginTop: 2,
   },
-  removeTaskButton: {
-    padding: Spacing.xs,
+  moreTasksText: {
+    color: "#8B7FC7",
+    textAlign: "center",
+    paddingVertical: Spacing.sm,
   },
   progressInfo: {
     flexDirection: "row",
@@ -650,5 +853,35 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  pickerModalContent: {
+    backgroundColor: "#1E1B2E",
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    marginHorizontal: Spacing.lg,
+  },
+  pickerTitle: {
+    color: "#FFFFFF",
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+  },
+  pickerOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+  },
+  pickerOptionSelected: {
+    backgroundColor: "rgba(139, 92, 246, 0.2)",
+  },
+  pickerOptionText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+  },
+  pickerOptionTextSelected: {
+    color: "#8B5CF6",
+    fontWeight: "600",
   },
 });
