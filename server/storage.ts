@@ -29,7 +29,7 @@ import {
   type NewsFeedPost,
   type PasswordResetToken,
   type Conversation,
-} from "@shared/schema";
+} from "../shared/schema.js";
 /* eslint-disable */
 /* @ts-nocheck */
 export interface IStorage {
