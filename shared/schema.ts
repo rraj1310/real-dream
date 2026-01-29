@@ -362,7 +362,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   fullName: true,
-});
+}as any);
 
 export const loginSchema = z.object({
   emailOrUsername: z.string().min(1, "Email or username is required"),
@@ -380,13 +380,13 @@ export const insertDreamSchema = createInsertSchema(dreams).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-});
+}as any);
 
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   createdAt: true,
   isRead: true,
-});
+}as any);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
