@@ -163,10 +163,10 @@ function serveLandingPage({
 
 function configureExpoAndLanding(app: express.Application) {
   const templatePath = path.resolve(
-  __dirname,
-  "templates",
-  "landing-page.html"
-);
+    process.cwd(),
+    "templates",
+    "landing-page.html",
+  );
   const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
   const appName = getAppName();
 

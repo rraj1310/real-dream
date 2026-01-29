@@ -1,11 +1,3 @@
-import { Request } from "express";
-
-export interface AuthRequest extends Request {
-  user?: {
-    uid: string;
-    email?: string;
-  };
-}
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "node:http";
 import bcrypt from "bcryptjs";
@@ -24,12 +16,12 @@ try {
 } catch (error) {
   console.warn("Firebase Admin SDK not initialized. Firebase auth will not work:", error);
 }
-
-interface AuthRequest extends Request {
-  user?: { id: string; email: string; firebaseUid?: string };
-}
-
-async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+async function authMiddleware(
+  req: Request & { user?: { id: string; email: string; firebaseUid?: string } },
+  res: Response,
+  next: NextFunction
+)
+{
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -424,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/auth/me", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/auth/me", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const user = await storage.getUser(req.user!.id);
       if (!user) {
@@ -437,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/profile", authMiddleware, async (req: AuthRequest, res) => {
+  app.put("/api/profile", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const user = await storage.updateUser(req.user!.id, req.body);
       if (!user) {
@@ -450,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/subscription", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/subscription", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const { tier } = req.body;
       const validTiers = ["bronze", "silver", "gold", "platinum"];
@@ -485,7 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/profile", authMiddleware, async (req: AuthRequest, res) => {
+  app.delete("/api/profile", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       await storage.deleteUser(req.user!.id);
       res.json({ success: true });
@@ -494,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dreams", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/dreams", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const dreams = await storage.getDreams(req.user!.id);
       res.json(dreams);
@@ -503,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/dreams", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/dreams", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const { title, description, type, privacy, startDate, duration, durationUnit, recurrence, tasks: taskTexts } = req.body;
       
@@ -582,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dreams/:id", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/dreams/:id", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const id = req.params.id as string;
       const dream = await storage.getDream(id);
@@ -609,7 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/dreams/:id", authMiddleware, async (req: AuthRequest, res) => {
+  app.put("/api/dreams/:id", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const id = req.params.id as string;
       const existingDream = await storage.getDream(id);
@@ -629,7 +621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/dreams/:id", authMiddleware, async (req: AuthRequest, res) => {
+  app.delete("/api/dreams/:id", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const id = req.params.id as string;
       const existingDream = await storage.getDream(id);
@@ -649,7 +641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dreams/:dreamId/tasks", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/dreams/:dreamId/tasks", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const dreamId = req.params.dreamId as string;
       
@@ -677,7 +669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/dreams/:dreamId/tasks", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/dreams/:dreamId/tasks", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const dreamId = req.params.dreamId as string;
       const { title, description, dueDate, reminderDate, order } = req.body;
@@ -708,7 +700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: AuthRequest, res) => {
+  app.put("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const dreamId = req.params.dreamId as string;
       const taskId = req.params.taskId as string;
@@ -726,7 +718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: AuthRequest, res) => {
+  app.delete("/api/dreams/:dreamId/tasks/:taskId", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const dreamId = req.params.dreamId as string;
       const taskId = req.params.taskId as string;
@@ -738,7 +730,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/dreams/:dreamId/tasks/:taskId/toggle", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/dreams/:dreamId/tasks/:taskId/toggle", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const dreamId = req.params.dreamId as string;
       const taskId = req.params.taskId as string;
@@ -772,7 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/connections", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/connections", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const connections = await storage.getConnections(req.user!.id);
       res.json(connections);
@@ -781,7 +773,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/connections/:userId/follow", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/connections/:userId/follow", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const targetUserId = req.params.userId as string;
       const isAlreadyFollowing = await storage.isFollowing(req.user!.id, targetUserId);
@@ -795,7 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/connections/:userId/unfollow", authMiddleware, async (req: AuthRequest, res) => {
+  app.delete("/api/connections/:userId/unfollow", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const targetUserId = req.params.userId as string;
       await storage.deleteConnection(req.user!.id, targetUserId);
@@ -805,7 +797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/conversations", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/conversations", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const conversations = await storage.getConversations(req.user!.id);
       res.json(conversations);
@@ -814,7 +806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/messages", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/messages", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const messages = await storage.getMessages(req.user!.id);
       res.json(messages);
@@ -823,7 +815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/messages/:userId", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/messages/:userId", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const targetUserId = req.params.userId as string;
       const messages = await storage.getConversation(req.user!.id, targetUserId);
@@ -834,7 +826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/messages", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/messages", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const message = await storage.createMessage({
         ...req.body,
@@ -846,7 +838,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/messages/read-all", authMiddleware, async (req: AuthRequest, res) => {
+  app.put("/api/messages/read-all", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const { otherUserId } = req.body;
       if (otherUserId) {
@@ -858,7 +850,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/notifications", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/notifications", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const notifications = await storage.getNotifications(req.user!.id);
       res.json(notifications);
@@ -867,7 +859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/notifications/:id/read", authMiddleware, async (req: AuthRequest, res) => {
+  app.put("/api/notifications/:id/read", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const id = req.params.id as string;
       const updated = await storage.markNotificationRead(id, req.user!.id);
@@ -880,7 +872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/notifications/read-all", authMiddleware, async (req: AuthRequest, res) => {
+  app.put("/api/notifications/read-all", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       await storage.markAllNotificationsRead(req.user!.id);
       res.json({ success: true });
@@ -889,7 +881,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/wallet", authMiddleware, async (req: AuthRequest, res) => {
+  app.get("/api/wallet", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const user = await storage.getUser(req.user!.id);
       const transactions = await storage.getTransactions(req.user!.id);
@@ -904,7 +896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/wallet/spin", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/wallet/spin", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const user = await storage.getUser(req.user!.id);
       if (!user) {
@@ -987,7 +979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/gallery", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/gallery", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const post = await storage.createGalleryPost({
         ...req.body,
@@ -1008,7 +1000,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/news-feed", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/news-feed", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const post = await storage.createNewsFeedPost({
         ...req.body,
@@ -1020,7 +1012,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/news-feed/:id/like", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/news-feed/:id/like", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const postId = req.params.id as string;
       await storage.likePost(postId, req.user!.id);
@@ -1041,7 +1033,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Purchase a market item
-  app.post("/api/market/:id/purchase", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/market/:id/purchase", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const itemId = req.params.id as string;
       const userId = req.user!.id;
@@ -1080,7 +1072,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Purchase a theme
-  app.post("/api/themes/:id/purchase", authMiddleware, async (req: AuthRequest, res) => {
+  app.post("/api/themes/:id/purchase", authMiddleware, async (req: Request & { user?: any }, res) => {
     try {
       const themeId = req.params.id as string;
       const userId = req.user!.id;
