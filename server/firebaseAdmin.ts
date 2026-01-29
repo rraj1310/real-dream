@@ -1,62 +1,31 @@
-import admin from 'firebase-admin';
+import admin from "firebase-admin";
 
 let initialized = false;
 
+function initFirebase() {
+  if (initialized) return;
+
+  const base64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+  if (!base64) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_BASE64 is missing");
+  }
+
+  const json = Buffer.from(base64, "base64").toString("utf-8");
+  const serviceAccount = JSON.parse(json);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+
+  initialized = true;
+  console.log("Firebase Admin SDK initialized successfully");
+}
+
 export function initializeFirebaseAdmin() {
-  if (initialized) {
-    return admin;
-  }
-
-  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-  
-  if (!serviceAccountKey) {
-    console.error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
-    throw new Error('Firebase Admin SDK not configured');
-  }
-
-  try {
-    const serviceAccount = JSON.parse(serviceAccountKey);
-    
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-    
-    initialized = true;
-    console.log('Firebase Admin SDK initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize Firebase Admin SDK:', error);
-    throw error;
-  }
-
-  return admin;
+  initFirebase();
 }
 
-export async function verifyIdToken(idToken: string): Promise<admin.auth.DecodedIdToken> {
-  if (!initialized) {
-    initializeFirebaseAdmin();
-  }
-  
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    return decodedToken;
-  } catch (error) {
-    console.error('Error verifying ID token:', error);
-    throw error;
-  }
+export async function verifyIdToken(token: string) {
+  initFirebase();
+  return admin.auth().verifyIdToken(token);
 }
-
-export async function getFirebaseUser(uid: string): Promise<admin.auth.UserRecord | null> {
-  if (!initialized) {
-    initializeFirebaseAdmin();
-  }
-  
-  try {
-    const userRecord = await admin.auth().getUser(uid);
-    return userRecord;
-  } catch (error) {
-    console.error('Error getting Firebase user:', error);
-    return null;
-  }
-}
-
-export { admin };
